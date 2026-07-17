@@ -1,0 +1,216 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <!-- 
+    Microsoft ResX Schema 
+    
+    Version 2.0
+    
+    The primary goals of this format is to allow a simple XML format 
+    that is mostly human readable. The generation and parsing of the 
+    various data types are done through the TypeConverter classes 
+    associated with the data types.
+    
+    Example:
+    
+    ... ado.net/XML headers & schema ...
+    <resheader name="resmimetype">text/microsoft-resx</resheader>
+    <resheader name="version">2.0</resheader>
+    <resheader name="reader">System.Resources.ResXResourceReader, System.Windows.Forms, ...</resheader>
+    <resheader name="writer">System.Resources.ResXResourceWriter, System.Windows.Forms, ...</resheader>
+    <data name="Name1"><value>this is my long string</value><comment>this is a comment</comment></data>
+    <data name="Color1" type="System.Drawing.Color, System.Drawing">Blue</data>
+    <data name="Bitmap1" mimetype="application/x-microsoft.net.object.binary.base64">
+        <value>[base64 mime encoded serialized .NET Framework object]</value>
+    </data>
+    <data name="Icon1" type="System.Drawing.Icon, System.Drawing" mimetype="application/x-microsoft.net.object.bytearray.base64">
+        <value>[base64 mime encoded string representing a byte array form of the .NET Framework object]</value>
+        <comment>This is a comment</comment>
+    </data>
+                
+    There are any number of "resheader" rows that contain simple 
+    name/value pairs.
+    
+    Each data row contains a name, and value. The row also contains a 
+    type or mimetype. Type corresponds to a .NET class that support 
+    text/value conversion through the TypeConverter architecture. 
+    Classes that don't support this are serialized and stored with the 
+    mimetype set.
+    
+    The mimetype is used for serialized objects, and tells the 
+    ResXResourceReader how to depersist the object. This is currently not 
+    extensible. For a given mimetype the value must be set accordingly:
+    
+    Note - application/x-microsoft.net.object.binary.base64 is the format 
+    that the ResXResourceWriter will generate, however the reader can 
+    read any of the formats listed below.
+    
+    mimetype: application/x-microsoft.net.object.binary.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Binary.BinaryFormatter
+            : and then encoded with base64 encoding.
+    
+    mimetype: application/x-microsoft.net.object.soap.base64
+    value   : The object must be serialized with 
+            : System.Runtime.Serialization.Formatters.Soap.SoapFormatter
+            : and then encoded with base64 encoding.
+
+    mimetype: application/x-microsoft.net.object.bytearray.base64
+    value   : The object must be serialized into a byte array 
+            : using a System.ComponentModel.TypeConverter
+            : and then encoded with base64 encoding.
+    -->
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="FilePathTextBox.Description" xml:space="preserve">
+    <value>Μπορείτε επίσης να σύρετε ένα αρχείο / φάκελο εδώ!</value>
+  </data>
+  <data name="HomeTitle.Text" xml:space="preserve">
+    <value>Αρχική</value>
+  </data>
+  <data name="LowCompressionButton.Content" xml:space="preserve">
+    <value>Χαμηλή</value>
+  </data>
+  <data name="MaxCompressionButton.Content" xml:space="preserve">
+    <value>Μέγιστη (δεν συνίσταται)</value>
+  </data>
+  <data name="MediumCompressionButton.Content" xml:space="preserve">
+    <value>Μέτρια</value>
+  </data>
+  <data name="PickFileButton.Text" xml:space="preserve">
+    <value>Επιλέξτε ένα αρχείο</value>
+  </data>
+  <data name="PickFolderButton.Text" xml:space="preserve">
+    <value>Επιλέξτε ένα φάκελο</value>
+  </data>
+  <data name="HomeSubTitle.Text" xml:space="preserve">
+    <value>Μπορείτε να συμπιέσετε ένα αρχείο .pdf ή όλα τα αρχεία που συμπεριλαμβάνονται σε ένα φάκελο και τους υποφακέλους.
+Μπορείτε επίσης να συμπιέσετε όλα τα .pdf αρχεία που βρίσκονται μέσα σε συμπιεσμένα αρχεία (.zip, .tar.gz κλπ)</value>
+  </data>
+  <data name="HighCompressionButton.Content" xml:space="preserve">
+    <value>Υψηλή</value>
+  </data>
+  <data name="InnerCompressButton.Text" xml:space="preserve">
+    <value>Συμπίεση</value>
+  </data>
+  <data name="CompressionLevelGroup.Header" xml:space="preserve">
+    <value>Επίπεδο συμπίεσης</value>
+  </data>
+  <data name="HomePageButton.Content" xml:space="preserve">
+    <value>Αρχική</value>
+  </data>
+  <data name="DragUICaption" xml:space="preserve">
+    <value>Σύρετε και αφήστε εδώ!</value>
+  </data>
+  <data name="FilePathTextBox.PlaceholderText" xml:space="preserve">
+    <value>Δεν επιλέχθηκε κάποιο αρχείο ή φάκελος ακόμα</value>
+  </data>
+  <data name="Compressing" xml:space="preserve">
+    <value>Συμπίεση</value>
+  </data>
+  <data name="Success" xml:space="preserve">
+    <value>Επιτυχία</value>
+  </data>
+  <data name="Failure" xml:space="preserve">
+    <value>Αποτυχία</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Ακύρωση</value>
+  </data>
+  <data name="Finish" xml:space="preserve">
+    <value>Τέλος</value>
+  </data>
+  <data name="CopiedErrorTeachingTip.Title" xml:space="preserve">
+    <value>Το μήνυμα σφάλματος αντιγράφηκε στο πρόχειρο επιτυχώς.</value>
+  </data>
+  <data name="SettingsTitle.Text" xml:space="preserve">
+    <value>Σχετικά με</value>
+  </data>
+  <data name="InvalidFileException" xml:space="preserve">
+    <value>Το αρχείο που επιλέξατε δεν είναι pdf ή δεν υπάρχει.</value>
+  </data>
+  <data name="CompressionLevelGroup.Description" xml:space="preserve">
+    <value>Επιλέξτε μεταξύ τεσσάρων επιπέδων συμπίεσης</value>
+  </data>
+  <data name="DeleteOriginalFilesSwitch.Header" xml:space="preserve">
+    <value>Διαγραφή των αρχικών .pdf αρχείων</value>
+  </data>
+  <data name="DeleteOriginalFilesSwitch.Description" xml:space="preserve">
+    <value>Όταν είναι ενεργή η επιλογή, όλα τα αρχικά .pdf αρχεία διαγράφονται. Αυτό δεν ισχύει στα συμπιεσμένα αρχεία καθώς κάθε φορά δημιουργείται ένα νέο αντίγραφο.</value>
+  </data>
+  <data name="GenericError" xml:space="preserve">
+    <value>Προέκυψε ένα μη αναμενόμενο σφάλμα. Αν αυτό συνεχιστεί ενημερώστε τον προγραμματιστή!</value>
+  </data>
+  <data name="LicenseExpander.Header" xml:space="preserve">
+    <value>Δείτε τις άδειες λογισμικού των βιβλιοθηκών που χρησιμοποιήθηκαν</value>
+  </data>
+  <data name="GithubButton.Header" xml:space="preserve">
+    <value>Πηγαίος κώδικας</value>
+  </data>
+  <data name="GithubButton.Description" xml:space="preserve">
+    <value>Αυτή η εφαρμογή χρησιμοποιεί βιβλιοθήκες ανοιχτού κώδικα όπως το ghostscript για να παρέχει μέρος των δυνατοτήτων της όπως η συμπίεση PDF αρχείων.
+Κάθε είδους συνεισφορά είναι ευπρόσδεκτη. 
+Μπορείτε να δείτε τον πηγαίο κώδικα στο GitHub.</value>
+  </data>
+  <data name="LogoAttribution.Header" xml:space="preserve">
+    <value>Εικονίδιο εφαρμογής</value>
+  </data>
+  <data name="LogoAttribution.Description" xml:space="preserve">
+    <value>Ευχαριστώ τον φίλο μου Απόστολο Πασχάλη για την δημιουργία του εικονιδίου της εφαρμογής. Μπορείτε να επισκεφτείτε το LinkedIn προφίλ του για περισσότερες πληροφορίες.</value>
+  </data>
+</root>
