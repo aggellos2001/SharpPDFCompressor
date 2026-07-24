@@ -252,9 +252,17 @@ public partial class HomeViewModel : ObservableObject
                     });
 
                     try
-                    {
-                        string compressedFileName =
-                            Path.Combine(directoryName, $"{fileName}_compressed{extension}");
+                    { 
+                        string baseNewName = $"{fileName}_compressed";
+                        string compressedFileName = Path.Combine(directoryName, $"{baseNewName}{extension}");
+                        int counter = 1;
+
+                        // Keep appending a counter until we find a filename that doesn't exist yet
+                        while (File.Exists(compressedFileName))
+                        {
+                            compressedFileName = Path.Combine(directoryName, $"{baseNewName} ({counter}){extension}");
+                            counter++;
+                        }
 
                         List<string> arguments =
                         [
@@ -325,7 +333,7 @@ public partial class HomeViewModel : ObservableObject
             }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
+                errors.Add(e);
             }
             finally
             {

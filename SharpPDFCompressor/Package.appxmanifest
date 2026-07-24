@@ -12,7 +12,7 @@
   <Identity
     Name="47880TsiantakisApps.SharpPDFCompressor"
     Publisher="CN=CD96A981-8A37-455F-A0E2-A2A469623558"
-    Version="1.0.0.0" />
+    Version="1.0.1.0" />
 
   <mp:PhoneIdentity PhoneProductId="ada278a4-7559-470c-9cf0-fa75571e66df" PhonePublisherId="00000000-0000-0000-0000-000000000000"/>
 
