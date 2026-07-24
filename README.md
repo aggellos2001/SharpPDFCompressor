@@ -20,7 +20,7 @@ Contributions are very welcome. This is my first WinUI app and I am still making
 
 I hope you find this application of use. 
 
-# Microsoft Store
+## Microsoft Store
 
 The application is available for free to download use from Microsoft Store.
 
