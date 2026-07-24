@@ -20,6 +20,14 @@ Contributions are very welcome. This is my first WinUI app and I am still making
 
 I hope you find this application of use. 
 
+# Microsoft Store
+
+The application is available for free to download use from Microsoft Store.
+
+<a href="https://get.microsoft.com/installer/download/9mtshhcjxsx4?referrer=appbadge" target="_self" >
+	<img src="https://get.microsoft.com/images/en-us%20light.svg" width="200"/>
+</a>
+
 
 
 
