@@ -13,7 +13,9 @@ using SharpCompress.Writers;
 using SharpPDFCompressor.Ui;
 using SharpPDFCompressor.Utils;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -30,9 +32,9 @@ namespace SharpPDFCompressor.ViewModels;
 
 public partial class HomeViewModel : ObservableObject
 {
-
     private static readonly string DllPath = Path.Combine(AppContext.BaseDirectory, "Runtimes", "gsdll64.dll");
     private readonly ResourceLoader _resourceLoader = new();
+    private CancellationTokenSource? _cts;
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CompressionButtonEnabled))]
@@ -40,13 +42,24 @@ public partial class HomeViewModel : ObservableObject
 
     public bool CompressionButtonEnabled => !string.IsNullOrWhiteSpace(FilePath) && Path.Exists(FilePath);
 
-    [ObservableProperty] public partial string? CompressionLevel { get; set; } = "ebook";
+    [ObservableProperty] public partial string CompressionLevel { get; set; } = "ebook";
+
+    [ObservableProperty] public partial string ParallelismLevel { get; set; } = "4";
 
     [ObservableProperty] public partial bool DeleteOriginalFiles { get; set; }
 
     public bool IsTypeSelected(string type)
     {
         return CompressionLevel == type;
+    }
+
+    public ObservableCollection<string> WorkerFileStatuses { get; } = [];
+    public void InitializeWorkers(int maxWorkers)
+    {
+        WorkerFileStatuses.Clear();
+        for (int i = 0; i < maxWorkers; i++)
+        {
+            WorkerFileStatuses.Add("Waiting...");        }
     }
 
 
@@ -104,31 +117,27 @@ public partial class HomeViewModel : ObservableObject
             string.Empty,
             GhostscriptLicense.GPL
         );
-        using GhostscriptProcessor gsProcessor = new(gsVersion);
-        using CancellationTokenSource cts = new();
+        _cts = new CancellationTokenSource();
 
-        gsProcessor.Processing += (_, _) =>
+        this._cts.Token.Register(() =>
         {
-            try
-            {
-                if (cts is { IsCancellationRequested: true })
-                {
-                    gsProcessor.StopProcessing();
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-            }
-        };
+            FilePath = "";
+        });
+
+        int maxWorkers = int.Parse(ParallelismLevel);
+        
+        InitializeWorkers(maxWorkers);
+        ConcurrentQueue<int> availableStatusSlots = new(Enumerable.Range(0, maxWorkers));
+
 
         XamlUICommand buttonCancelCommand = new();
         buttonCancelCommand.ExecuteRequested += (s, q) =>
         {
             try
             {
-                if (cts is { IsCancellationRequested: false })
+                if (_cts is { IsCancellationRequested: false })
                 {
-                    cts.Cancel();
+                    _cts.Cancel();
                 }
             }
             catch (ObjectDisposedException)
@@ -149,10 +158,25 @@ public partial class HomeViewModel : ObservableObject
             DefaultButton = ContentDialogButton.Primary,
             IsPrimaryButtonEnabled = false
         };
+        dialog.CloseButtonClick += (sender, args) =>
+        {
+            args.Cancel = true;
+
+            if (this._cts is { IsCancellationRequested: true })
+            {
+                return;
+            }
+
+            this._cts.Cancel();
+            dialog.Title = this._resourceLoader.GetString("CancelOperation");
+            progressDialogViewModel.FileText = this._resourceLoader.GetString("CancelOperationExplanation");
+            dialog.CloseButtonText = this._resourceLoader.GetString("PleaseWait");
+        };
+
         dialog.ShowAsync();
 
         string inputPath = FilePath;
-        string quality = CompressionLevel ?? "ebook";
+        string quality = CompressionLevel;
         List<Exception> errors = [];
         IEnumerable<string> files = [];
 
@@ -166,15 +190,13 @@ public partial class HomeViewModel : ObservableObject
             {
                 await using Stream stream = File.OpenRead(inputPath);
                 await using IAsyncReader reader =
-                    await ReaderFactory.OpenAsyncReader(stream, cancellationToken: cts.Token);
+                    await ReaderFactory.OpenAsyncReader(stream, cancellationToken: _cts.Token);
 
                 string? parentDir = Path.GetDirectoryName(inputPath);
                 if (parentDir == null)
                 {
                     errors.Add(new Exception("Something went wrong!"));
                 }
-                //string zipFileName = Path.GetFileNameWithoutExtension(inputPath);
-
 
                 // first we extract the archive in the temp folder
                 AppUtils.GetTempDir(out string tempDir);
@@ -188,7 +210,7 @@ public partial class HomeViewModel : ObservableObject
                 {
                     await reader.WriteAllToDirectoryAsync(zipExtractionDir,
                         new ExtractionOptions { ExtractFullPath = true, PreserveFileTime = true, Overwrite = true },
-                        cts.Token);
+                        _cts.Token);
                 }
                 catch (Exception e)
                 {
@@ -219,14 +241,35 @@ public partial class HomeViewModel : ObservableObject
             errors.Add(new Exception(this._resourceLoader.GetString("InvalidFileException")));
         }
 
-
         if (errors.Count == 0)
         {
+            ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = maxWorkers };
+
             await Task.Run(() =>
             {
-                foreach (string file in files)
+                Parallel.ForEach(files, parallelOptions, file =>
                 {
-                    if (cts.Token.IsCancellationRequested)
+                    using GhostscriptProcessor gsProcessor = new(gsVersion);
+                    gsProcessor.Processing += (sender, _) =>
+                    {
+                        try
+                        {
+                            if (this._cts is not { IsCancellationRequested: true })
+                            {
+                                return;
+                            }
+
+                            if (sender is GhostscriptProcessor processor)
+                            {
+                                processor.StopProcessing();
+                            }
+                        }
+                        catch (ObjectDisposedException)
+                        {
+                        }
+                    };
+
+                    if (_cts.Token.IsCancellationRequested)
                     {
                         return;
                     }
@@ -243,16 +286,13 @@ public partial class HomeViewModel : ObservableObject
 
                     if (!file.ToLower().EndsWith("pdf"))
                     {
-                        continue;
+                        return;
                     }
 
-                    App.MainWindow?.DispatcherQueue.TryEnqueue(() =>
-                    {
-                        progressDialogViewModel.FileText = $"{_resourceLoader.GetString("Compressing")} {file}";
-                    });
+                    availableStatusSlots.TryDequeue(out int slotIndex);
 
                     try
-                    { 
+                    {
                         string baseNewName = $"{fileName}_compressed";
                         string compressedFileName = Path.Combine(directoryName, $"{baseNewName}{extension}");
                         int counter = 1;
@@ -263,6 +303,11 @@ public partial class HomeViewModel : ObservableObject
                             compressedFileName = Path.Combine(directoryName, $"{baseNewName} ({counter}){extension}");
                             counter++;
                         }
+                        App.MainWindow?.DispatcherQueue.TryEnqueue(() =>
+                        {
+                            progressDialogViewModel.FileText = $"{_resourceLoader.GetString("Compressing")} {file}";
+                            WorkerFileStatuses[slotIndex] = $"{_resourceLoader.GetString("Compressing")} {file}";
+                        });
 
                         List<string> arguments =
                         [
@@ -295,13 +340,22 @@ public partial class HomeViewModel : ObservableObject
                     }
                     finally
                     {
+                        availableStatusSlots.Enqueue(slotIndex);
+
                         App.MainWindow?.DispatcherQueue.TryEnqueue(() =>
                         {
                             progressDialogViewModel.ProgressValue += 1.0 / pdfFilesCount * 100;
                         });
                     }
-                }
-            }, cts.Token);
+                });
+
+
+                App.MainWindow?.DispatcherQueue.TryEnqueue(() =>
+                {
+                    progressDialogViewModel.ProgressValue = 100;
+                });
+
+            }, _cts.Token);
         }
 
         if (isArchive)
@@ -327,9 +381,9 @@ public partial class HomeViewModel : ObservableObject
                         new WriterOptions(CompressionType.Deflate)
                         {
                             ArchiveEncoding = new ArchiveEncoding { Forced = Encoding.UTF8 }
-                        }, cts.Token);
+                        }, _cts.Token);
 
-                await writer.WriteAllAsync(inputPath, "*", SearchOption.AllDirectories, cts.Token);
+                await writer.WriteAllAsync(inputPath, "*", SearchOption.AllDirectories, _cts.Token);
             }
             catch (Exception e)
             {
@@ -345,11 +399,16 @@ public partial class HomeViewModel : ObservableObject
             }
         }
 
-
-        dialog.PrimaryButtonText = _resourceLoader.GetString("Finish");
-        dialog.CloseButtonText = string.Empty;
-        dialog.IsPrimaryButtonEnabled = true;
-
+        if (this._cts is { IsCancellationRequested: true } && errors.Count == 0)
+        {
+            dialog.Hide();
+        }
+        else
+        {
+            dialog.PrimaryButtonText = _resourceLoader.GetString("Finish");
+            dialog.CloseButtonText = string.Empty;
+            dialog.IsPrimaryButtonEnabled = true;
+        }
 
         if (errors.Count == 0)
         {
@@ -362,6 +421,8 @@ public partial class HomeViewModel : ObservableObject
             progressDialogViewModel.ShowError = true;
             progressDialogViewModel.ErrorList = errors;
         }
+
+        FilePath = "";
     }
 
     public void OnDragOver(object sender, DragEventArgs e)

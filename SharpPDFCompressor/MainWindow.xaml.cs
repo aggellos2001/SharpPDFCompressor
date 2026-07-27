@@ -4,10 +4,8 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
 using SharpPDFCompressor.Ui;
 using WinUIEx;
-using TitleBar = Microsoft.UI.Xaml.Controls.TitleBar;
 
 namespace SharpPDFCompressor;
-
 
 public sealed partial class MainWindow : WindowEx
 {
@@ -72,7 +70,7 @@ public sealed partial class MainWindow : WindowEx
             //double targetWidth = rootElement.DesiredSize.Width;
             double targetHeight = rootElement.DesiredSize.Height;
 
-            this.SetWindowSize(1000, targetHeight + 10.0);
+            this.SetWindowSize(1030, targetHeight + 100.0);
             this.CenterOnScreen();
 
             this.Activate();

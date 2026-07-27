@@ -212,4 +212,19 @@ I welcome and encourage contributions to the code of this application. You can r
   <data name="LogoAttribution.Description" xml:space="preserve">
     <value>Many thanks to my friend Apostolos Paschalis for creating the application icon. Check out his LinkedIn profile for more.</value>
   </data>
+  <data name="CancelOperation" xml:space="preserve">
+    <value>Cancelling operation...</value>
+  </data>
+  <data name="CancelOperationExplanation" xml:space="preserve">
+    <value>Waiting for the current compression operation to finish. It might take a while.</value>
+  </data>
+  <data name="PleaseWait" xml:space="preserve">
+    <value>Please wait</value>
+  </data>
+  <data name="ParallelismLevel.Header" xml:space="preserve">
+    <value>Parallelism Level</value>
+  </data>
+  <data name="ParallelismLevel.Description" xml:space="preserve">
+    <value>Select the number of workers for parallel compression. This can help speed up the operation when you have multiple cores available.</value>
+  </data>
 </root>
