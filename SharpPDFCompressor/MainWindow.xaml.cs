@@ -62,18 +62,20 @@ public sealed partial class MainWindow : WindowEx
 
     private void OnContentLayoutUpdated(object? sender, object e)
     {
-        if (this.Content is FrameworkElement rootElement)
+        if (this.Content is not FrameworkElement rootElement)
         {
-            rootElement.LayoutUpdated -= OnContentLayoutUpdated;
-
-            // Use the DesiredSize of the root element
-            //double targetWidth = rootElement.DesiredSize.Width;
-            double targetHeight = rootElement.DesiredSize.Height;
-
-            this.SetWindowSize(1030, targetHeight + 100.0);
-            this.CenterOnScreen();
-
-            this.Activate();
+            return;
         }
+
+        rootElement.LayoutUpdated -= this.OnContentLayoutUpdated;
+
+        // Use the DesiredSize of the root element
+        //double targetWidth = rootElement.DesiredSize.Width;
+        double targetHeight = rootElement.DesiredSize.Height;
+
+        this.SetWindowSize(1250, targetHeight + 10.0);
+        this.CenterOnScreen();
+
+        this.Activate();
     }
 }

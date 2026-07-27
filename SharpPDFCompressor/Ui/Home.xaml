@@ -83,7 +83,7 @@
                 </controls:SettingsCard>
 
                 <controls:SettingsCard x:Uid="ParallelismLevel"
-                                       HeaderIcon="{ui:FontIcon Glyph=&#xe73f;}"
+                                       HeaderIcon="{ui:FontIcon Glyph=&#xE9D5;}"
                                        HorizontalAlignment="Stretch">
                     <ComboBox SelectedValue="{x:Bind ViewModel.ParallelismLevel,Mode=TwoWay}" SelectedValuePath="Content">
                         <ComboBoxItem Content="1"></ComboBoxItem>
@@ -91,6 +91,7 @@
                         <ComboBoxItem Content="4"></ComboBoxItem>
                         <ComboBoxItem Content="8"></ComboBoxItem>
                         <ComboBoxItem Content="16"></ComboBoxItem>
+                        <ComboBoxItem Content="32"></ComboBoxItem>
                     </ComboBox>
                 </controls:SettingsCard>
 

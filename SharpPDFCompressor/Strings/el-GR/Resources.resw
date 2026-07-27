@@ -228,4 +228,10 @@
   <data name="ParallelismLevel.Description" xml:space="preserve">
     <value>Επιλέξτε τον αριθμό παράλληλων συμπιέσεων. Αυτή η ρύθμιση μπορεί να βοηθήσει στην ταχύτητα συμπίεσης εφόσον ο υπολογιστής διαθέτει πολλαπλούς πυρήνες.</value>
   </data>
+  <data name="CompressingStatus" xml:space="preserve">
+    <value>Συμπίεση σε εξέλιξη. Παρακαλώ περιμένετε καθώς αυτή η ενέργεια μπορεί να διαρκέσει αρκετή ώρα.</value>
+  </data>
+  <data name="LongNameException" xml:space="preserve">
+    <value>Η διαδρομή του αρχείου ξεπερνάει το όριο των 250 χαρακτήρων. Μειώστε τα ονόματα των φακέλων και των αρχείων και δοκιμάστε ξανά.</value>
+  </data>
 </root>

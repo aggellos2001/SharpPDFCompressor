@@ -1,11 +1,9 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
-using Ghostscript.NET.PDFA3Converter.ZUGFeRD;
 using SharpPDFCompressor.DataModels;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
@@ -25,7 +23,7 @@ public partial class SettingsViewModel : ObservableObject
             }
             catch (Exception)
             {
-                return "Version 1.0.0.0 (Unpackaged)";
+                return "Unpackaged build";
             }
         }
     }

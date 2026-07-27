@@ -1,13 +1,7 @@
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
-using SharpPDFCompressor.DataModels;
 using SharpPDFCompressor.ViewModels;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Text.Json;
-using System.Threading.Tasks;
-using Windows.ApplicationModel;
 
 namespace SharpPDFCompressor.Ui;
 
@@ -29,7 +23,7 @@ public sealed partial class Settings : Page
 
     private async void GitHubButtonOpenLink(object sender, RoutedEventArgs e)
     {
-        Uri uri = new ("https://github.com/aggellos2001/SharpPDFCompressor");
+        Uri uri = new("https://github.com/aggellos2001/SharpPDFCompressor");
         await Windows.System.Launcher.LaunchUriAsync(uri);
     }
 

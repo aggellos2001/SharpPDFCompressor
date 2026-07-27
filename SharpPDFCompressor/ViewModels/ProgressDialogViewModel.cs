@@ -2,6 +2,7 @@
 using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -12,14 +13,17 @@ public partial class ProgressDialogViewModel : ObservableObject
     [ObservableProperty] public partial double ProgressValue { get; set; }
     [ObservableProperty] public partial string? FileText { get; set; }
     [ObservableProperty] public partial bool ShowError { get; set; }
-    [ObservableProperty] public partial List<Exception>? ErrorList { get; set; }
-    [ObservableProperty] public partial object? SelectedListError { get; set; }
+    [ObservableProperty] public partial List<String>? ErrorList { get; set; }
+    [ObservableProperty] public partial string? SelectedListError { get; set; }
     [ObservableProperty] public partial bool TipShown { get; set; }
+
+    public ObservableCollection<string> WorkerFileStatuses { get; } = [];
+
 
     [RelayCommand]
     public async Task CopyErrorToClipboard()
     {
-        var textToCopy = SelectedListError?.ToString();
+        string textToCopy = SelectedListError ?? "";
         if (!string.IsNullOrEmpty(textToCopy))
         {
             var dataPackage = new DataPackage();
@@ -32,5 +36,14 @@ public partial class ProgressDialogViewModel : ObservableObject
         }
 
         SelectedListError = null;
+    }
+
+    public void InitializeWorkers(int maxWorkers)
+    {
+        WorkerFileStatuses.Clear();
+        for (int i = 0; i < maxWorkers; i++)
+        {
+            WorkerFileStatuses.Add("Waiting...");
+        }
     }
 }
