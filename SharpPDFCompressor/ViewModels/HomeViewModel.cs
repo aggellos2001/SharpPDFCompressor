@@ -8,7 +8,6 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
 using SharpCompress.Archives;
 using SharpCompress.Common;
-using SharpCompress.Readers;
 using SharpCompress.Writers;
 using SharpPDFCompressor.Ui;
 using SharpPDFCompressor.Utils;
@@ -47,11 +46,6 @@ public partial class HomeViewModel : ObservableObject
     [ObservableProperty] public partial string ParallelismLevel { get; set; } = "4";
 
     [ObservableProperty] public partial bool DeleteOriginalFiles { get; set; }
-
-    public bool IsTypeSelected(string type)
-    {
-        return CompressionLevel == type;
-    }
 
     [RelayCommand]
     public async Task SelectFile(string? folderPicker)
@@ -148,6 +142,7 @@ public partial class HomeViewModel : ObservableObject
 
             if (this._cts is { IsCancellationRequested: true })
             {
+                dialog.Hide();
                 return;
             }
 
@@ -173,9 +168,9 @@ public partial class HomeViewModel : ObservableObject
         {
             if (isArchiveType != null)
             {
-                await using Stream stream = File.OpenRead(inputPath);
-                await using IAsyncReader reader =
-                    await ReaderFactory.OpenAsyncReader(stream, cancellationToken: _cts.Token);
+                //await using Stream stream = File.OpenRead(inputPath);
+                //await using IAsyncReader reader =
+                //    await ReaderFactory.OpenAsyncReader(stream, cancellationToken: _cts.Token);
 
                 string? parentDir = Path.GetDirectoryName(inputPath);
                 if (parentDir == null)
@@ -193,9 +188,26 @@ public partial class HomeViewModel : ObservableObject
 
                 try
                 {
-                    await reader.WriteAllToDirectoryAsync(zipExtractionDir,
-                        new ExtractionOptions { ExtractFullPath = true, PreserveFileTime = true, Overwrite = true },
-                        _cts.Token);
+                    await Task.Run(() =>
+                    {
+                        using IArchive archive = ArchiveFactory.OpenArchive(inputPath);
+                        ExtractionOptions options = new()
+                        {
+                            ExtractFullPath = true,
+                            PreserveFileTime = true,
+                            Overwrite = true
+                        };
+                        foreach (IArchiveEntry entry in archive.Entries.Where(e => !e.IsDirectory))
+                        {
+                            _cts.Token.ThrowIfCancellationRequested();
+                            entry.WriteToDirectory(zipExtractionDir, options);
+                        }
+                    }, _cts.Token);
+                }
+                catch (OperationCanceledException)
+                {
+                    dialog.Hide();
+                    return;
                 }
                 catch (Exception e)
                 {
@@ -376,6 +388,12 @@ public partial class HomeViewModel : ObservableObject
 
                 string originalArchiveName = Path.GetFileNameWithoutExtension(originalInputPath);
                 string destName = Path.Combine(resultDir, $"{originalArchiveName}_compressed.zip");
+                int counter = 1;
+                while (File.Exists(destName))
+                {
+                    destName = Path.Combine(resultDir, $"{originalArchiveName}_compressed({counter}).zip");
+                    counter++;
+                }
 
                 /*write a new archive with the files from the temp folder to the original
                 location where the archive existed
