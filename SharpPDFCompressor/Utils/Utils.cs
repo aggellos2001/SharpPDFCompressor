@@ -1,6 +1,6 @@
-﻿using System;
+﻿using Microsoft.Windows.ApplicationModel.Resources;
+using System;
 using System.IO;
-using Microsoft.Windows.ApplicationModel.Resources;
 using Windows.Storage;
 
 namespace SharpPDFCompressor.Utils
