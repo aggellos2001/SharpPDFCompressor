@@ -72,7 +72,6 @@
 
             <StackPanel Grid.Row="3" Spacing="10" HorizontalAlignment="Stretch">
                 <controls:SettingsCard x:Uid="CompressionLevelGroup"
-                                       Header="This is the Header"
                                        HeaderIcon="{ui:FontIcon Glyph=&#xe73f;}"
                                        HorizontalAlignment="Stretch">
                     <ComboBox SelectedValue="{x:Bind ViewModel.CompressionLevel,Mode=TwoWay}" SelectedValuePath="Tag">
@@ -80,6 +79,19 @@
                         <ComboBoxItem Tag="printer" x:Uid="MediumCompressionButton"></ComboBoxItem>
                         <ComboBoxItem Tag="ebook" x:Uid="HighCompressionButton"></ComboBoxItem>
                         <ComboBoxItem Tag="screen" x:Uid="MaxCompressionButton"></ComboBoxItem>
+                    </ComboBox>
+                </controls:SettingsCard>
+
+                <controls:SettingsCard x:Uid="ParallelismLevel"
+                                       HeaderIcon="{ui:FontIcon Glyph=&#xE9D5;}"
+                                       HorizontalAlignment="Stretch">
+                    <ComboBox SelectedValue="{x:Bind ViewModel.ParallelismLevel,Mode=TwoWay}" SelectedValuePath="Content">
+                        <ComboBoxItem Content="1"></ComboBoxItem>
+                        <ComboBoxItem Content="2"></ComboBoxItem>
+                        <ComboBoxItem Content="4"></ComboBoxItem>
+                        <ComboBoxItem Content="8"></ComboBoxItem>
+                        <ComboBoxItem Content="16"></ComboBoxItem>
+                        <ComboBoxItem Content="32"></ComboBoxItem>
                     </ComboBox>
                 </controls:SettingsCard>
 

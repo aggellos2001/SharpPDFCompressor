@@ -213,4 +213,25 @@
   <data name="LogoAttribution.Description" xml:space="preserve">
     <value>Ευχαριστώ τον φίλο μου Απόστολο Πασχάλη για την δημιουργία του εικονιδίου της εφαρμογής. Μπορείτε να επισκεφτείτε το LinkedIn προφίλ του για περισσότερες πληροφορίες.</value>
   </data>
+  <data name="CancelOperation" xml:space="preserve">
+    <value>Ακύρωση συμπίεσης...</value>
+  </data>
+  <data name="CancelOperationExplanation" xml:space="preserve">
+    <value>Σε αναμονή ακύρωσης της συμπίεσης. Η ακύρωση μπορεί να διαρκέσει λίγη ώρα.</value>
+  </data>
+  <data name="PleaseWait" xml:space="preserve">
+    <value>Παρακαλώ περιμένετε</value>
+  </data>
+  <data name="ParallelismLevel.Header" xml:space="preserve">
+    <value>Επίπεδο παραλληλισμού</value>
+  </data>
+  <data name="ParallelismLevel.Description" xml:space="preserve">
+    <value>Επιλέξτε τον αριθμό παράλληλων συμπιέσεων. Αυτή η ρύθμιση μπορεί να βοηθήσει στην ταχύτητα συμπίεσης εφόσον ο υπολογιστής διαθέτει πολλαπλούς πυρήνες.</value>
+  </data>
+  <data name="CompressingStatus" xml:space="preserve">
+    <value>Συμπίεση σε εξέλιξη. Παρακαλώ περιμένετε καθώς αυτή η ενέργεια μπορεί να διαρκέσει αρκετή ώρα.</value>
+  </data>
+  <data name="LongNameException" xml:space="preserve">
+    <value>Η διαδρομή του αρχείου ξεπερνάει το όριο των 250 χαρακτήρων. Μειώστε τα ονόματα των φακέλων και των αρχείων και δοκιμάστε ξανά.</value>
+  </data>
 </root>

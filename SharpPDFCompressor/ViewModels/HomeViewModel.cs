@@ -13,8 +13,8 @@ using SharpCompress.Writers;
 using SharpPDFCompressor.Ui;
 using SharpPDFCompressor.Utils;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -30,9 +30,11 @@ namespace SharpPDFCompressor.ViewModels;
 
 public partial class HomeViewModel : ObservableObject
 {
-
     private static readonly string DllPath = Path.Combine(AppContext.BaseDirectory, "Runtimes", "gsdll64.dll");
     private readonly ResourceLoader _resourceLoader = new();
+    private CancellationTokenSource? _cts;
+
+    private const string CompressedPdfSuffix = "_compressed";
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CompressionButtonEnabled))]
@@ -40,7 +42,9 @@ public partial class HomeViewModel : ObservableObject
 
     public bool CompressionButtonEnabled => !string.IsNullOrWhiteSpace(FilePath) && Path.Exists(FilePath);
 
-    [ObservableProperty] public partial string? CompressionLevel { get; set; } = "ebook";
+    [ObservableProperty] public partial string CompressionLevel { get; set; } = "ebook";
+
+    [ObservableProperty] public partial string ParallelismLevel { get; set; } = "4";
 
     [ObservableProperty] public partial bool DeleteOriginalFiles { get; set; }
 
@@ -49,13 +53,12 @@ public partial class HomeViewModel : ObservableObject
         return CompressionLevel == type;
     }
 
-
     [RelayCommand]
     public async Task SelectFile(string? folderPicker)
     {
         bool tryParse = TryParse(folderPicker, out bool folderPickerBool);
 
-        if (!folderPickerBool)
+        if (tryParse && !folderPickerBool)
         {
             IntPtr hWnd = WindowNative.GetWindowHandle(App.MainWindow);
 
@@ -98,37 +101,24 @@ public partial class HomeViewModel : ObservableObject
     [RelayCommand]
     public async Task Compress(XamlRoot xamlRoot)
     {
-        GhostscriptVersionInfo gsVersion = new(
-            new Version(10, 07, 1),
-            DllPath,
-            string.Empty,
-            GhostscriptLicense.GPL
-        );
-        using GhostscriptProcessor gsProcessor = new(gsVersion);
-        using CancellationTokenSource cts = new();
+        _cts = new CancellationTokenSource();
 
-        gsProcessor.Processing += (_, _) =>
+        this._cts.Token.Register(() =>
         {
-            try
-            {
-                if (cts is { IsCancellationRequested: true })
-                {
-                    gsProcessor.StopProcessing();
-                }
-            }
-            catch (ObjectDisposedException)
-            {
-            }
-        };
+            FilePath = "";
+        });
+
+        int maxWorkers = int.Parse(ParallelismLevel);
+
 
         XamlUICommand buttonCancelCommand = new();
         buttonCancelCommand.ExecuteRequested += (s, q) =>
         {
             try
             {
-                if (cts is { IsCancellationRequested: false })
+                if (_cts is { IsCancellationRequested: false })
                 {
-                    cts.Cancel();
+                    _cts.Cancel();
                 }
             }
             catch (ObjectDisposedException)
@@ -138,6 +128,9 @@ public partial class HomeViewModel : ObservableObject
 
 
         ProgressDialogViewModel progressDialogViewModel = new();
+        progressDialogViewModel.InitializeWorkers(maxWorkers);
+        ConcurrentQueue<int> availableStatusSlots = new(Enumerable.Range(0, maxWorkers));
+
         ProgressDialog dialog = new(progressDialogViewModel)
         {
             XamlRoot = xamlRoot,
@@ -149,11 +142,27 @@ public partial class HomeViewModel : ObservableObject
             DefaultButton = ContentDialogButton.Primary,
             IsPrimaryButtonEnabled = false
         };
+        dialog.CloseButtonClick += (sender, args) =>
+        {
+            args.Cancel = true;
+
+            if (this._cts is { IsCancellationRequested: true })
+            {
+                return;
+            }
+
+            this._cts.Cancel();
+            dialog.Title = this._resourceLoader.GetString("CancelOperation");
+            progressDialogViewModel.FileText = this._resourceLoader.GetString("CancelOperationExplanation");
+            dialog.CloseButtonText = this._resourceLoader.GetString("PleaseWait");
+        };
+
         dialog.ShowAsync();
 
         string inputPath = FilePath;
-        string quality = CompressionLevel ?? "ebook";
-        List<Exception> errors = [];
+        string quality = CompressionLevel;
+        ConcurrentBag<String> threadErrors = [];
+        List<String> errors = [];
         IEnumerable<string> files = [];
 
         string originalInputPath = string.Empty;
@@ -166,15 +175,13 @@ public partial class HomeViewModel : ObservableObject
             {
                 await using Stream stream = File.OpenRead(inputPath);
                 await using IAsyncReader reader =
-                    await ReaderFactory.OpenAsyncReader(stream, cancellationToken: cts.Token);
+                    await ReaderFactory.OpenAsyncReader(stream, cancellationToken: _cts.Token);
 
                 string? parentDir = Path.GetDirectoryName(inputPath);
                 if (parentDir == null)
                 {
-                    errors.Add(new Exception("Something went wrong!"));
+                    errors.Add("Something went wrong!");
                 }
-                //string zipFileName = Path.GetFileNameWithoutExtension(inputPath);
-
 
                 // first we extract the archive in the temp folder
                 AppUtils.GetTempDir(out string tempDir);
@@ -188,11 +195,11 @@ public partial class HomeViewModel : ObservableObject
                 {
                     await reader.WriteAllToDirectoryAsync(zipExtractionDir,
                         new ExtractionOptions { ExtractFullPath = true, PreserveFileTime = true, Overwrite = true },
-                        cts.Token);
+                        _cts.Token);
                 }
                 catch (Exception e)
                 {
-                    errors.Add(new Exception("Error occured " + e.StackTrace));
+                    errors.Add("Error occured " + e.StackTrace);
                 }
 
                 // keep the original input path here for cleanup
@@ -206,7 +213,7 @@ public partial class HomeViewModel : ObservableObject
         if (Directory.Exists(inputPath))
         {
             // Loop through all PDFs in the folder
-            files = Directory.EnumerateFiles(inputPath, "*.*", SearchOption.AllDirectories).ToArray();
+            files = [.. Directory.EnumerateFiles(inputPath, "*.*", SearchOption.AllDirectories)];
             pdfFilesCount = files.Count(file => file.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase));
         }
         else if (File.Exists(inputPath) && Path.GetExtension(inputPath).ToLower().EndsWith("pdf"))
@@ -216,53 +223,71 @@ public partial class HomeViewModel : ObservableObject
         }
         else
         {
-            errors.Add(new Exception(this._resourceLoader.GetString("InvalidFileException")));
+            errors.Add(this._resourceLoader.GetString("InvalidFileException"));
         }
+
+        progressDialogViewModel.FileText = $"{_resourceLoader.GetString("CompressingStatus")}";
 
 
         if (errors.Count == 0)
         {
+            ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = maxWorkers };
+
             await Task.Run(() =>
             {
-                foreach (string file in files)
+                Parallel.ForEach(files, parallelOptions, file =>
                 {
-                    if (cts.Token.IsCancellationRequested)
+                    if (_cts.Token.IsCancellationRequested)
                     {
                         return;
                     }
 
-                    string? directoryName = Path.GetDirectoryName(file);
-                    if (directoryName == null)
-                    {
-                        errors.Add(new Exception(this._resourceLoader.GetString("GenericError")));
-                        return;
-                    }
-
-                    string fileName = Path.GetFileNameWithoutExtension(file);
-                    string extension = Path.GetExtension(file);
-
-                    if (!file.ToLower().EndsWith("pdf"))
-                    {
-                        continue;
-                    }
-
-                    App.MainWindow?.DispatcherQueue.TryEnqueue(() =>
-                    {
-                        progressDialogViewModel.FileText = $"{_resourceLoader.GetString("Compressing")} {file}";
-                    });
+                    if (_cts.Token.IsCancellationRequested) return;
+                    availableStatusSlots.TryDequeue(out int slotIndex);
 
                     try
-                    { 
-                        string baseNewName = $"{fileName}_compressed";
-                        string compressedFileName = Path.Combine(directoryName, $"{baseNewName}{extension}");
+                    {
+
+                        if (file.Length >= 250)
+                        {
+                            throw new PathTooLongException(this._resourceLoader.GetString("LongNameException"));
+                        }
+
+                        string? directoryName = Path.GetDirectoryName(file);
+                        if (directoryName == null)
+                        {
+                            threadErrors.Add(this._resourceLoader.GetString("GenericError"));
+                            return;
+                        }
+
+                        string extension = Path.GetExtension(file);
+                        if (!extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase)) return;
+
+                        string safeFileName = AppUtils.GetSafeFileName(file, "_compressed");
+                        //string baseNewName = $"{safeFileName}_compressed";
+                        string compressedFileName = Path.Combine(directoryName, $"{safeFileName}");
                         int counter = 1;
 
                         // Keep appending a counter until we find a filename that doesn't exist yet
+                        string safeFileNameWithoutExtension = Path.GetFileNameWithoutExtension(safeFileName);
                         while (File.Exists(compressedFileName))
                         {
-                            compressedFileName = Path.Combine(directoryName, $"{baseNewName} ({counter}){extension}");
+                            compressedFileName = Path.Combine(directoryName,
+                                $"{safeFileNameWithoutExtension} ({counter}){extension}");
                             counter++;
                         }
+
+                        App.MainWindow?.DispatcherQueue.TryEnqueue(() =>
+                        {
+                            progressDialogViewModel.WorkerFileStatuses[slotIndex] =
+                                $"{_resourceLoader.GetString("Compressing")} {file}";
+                        });
+
+                        GCMemoryInfo memInfo = GC.GetGCMemoryInfo();
+                        long freeMemoryBytes = memInfo.TotalAvailableMemoryBytes - memInfo.MemoryLoadBytes;
+                        long bufferSpace = Math.Min((long)(freeMemoryBytes * 0.15), 1_000_000_000);
+                        bufferSpace = Math.Max(bufferSpace, 50_000_000);
+                        long bandBufferSpace = bufferSpace / 2;
 
                         List<string> arguments =
                         [
@@ -273,36 +298,70 @@ public partial class HomeViewModel : ObservableObject
                             "-dNOPAUSE",
                             "-sDEVICE=pdfwrite",
                             $"-dPDFSETTINGS=/{quality}",
+                            $"-dBufferSpace={bufferSpace}",
+                            $"-dBandBufferSpace={bandBufferSpace}",
                             $"-sOutputFile={compressedFileName}",
                             "-f",
                             file
                         ];
+                        GhostscriptVersionInfo gsVersion = new(
+                            new Version(10, 07, 1),
+                            DllPath,
+                            string.Empty,
+                            GhostscriptLicense.GPL
+                        );
+                        using GhostscriptProcessor gsProcessor = new(gsVersion);
+                        gsProcessor.Processing += (sender, _) =>
+                        {
+                            try
+                            {
+                                if (this._cts is not { IsCancellationRequested: true })
+                                {
+                                    return;
+                                }
 
+                                if (sender is GhostscriptProcessor processor)
+                                {
+                                    processor.StopProcessing();
+                                }
+                            }
+                            catch (ObjectDisposedException)
+                            {
+                            }
+                        };
                         gsProcessor.Process([.. arguments]);
 
-                        if (isArchive || DeleteOriginalFiles)
+                        if (!isArchive && !this.DeleteOriginalFiles)
                         {
-                            //if an archive or a folder with remove original files is given
-                            //then we remove the original file and rename the old from the
-                            //resulting archive or folder
-                            File.Delete(file);
-                            File.Move(compressedFileName, file);
+                            return;
                         }
+
+                        //if an archive or a folder with remove original files is given
+                        //then we remove the original file and rename the old from the
+                        //resulting archive or folder
+                        File.Delete(file);
+                        File.Move(compressedFileName, file);
                     }
                     catch (Exception exception)
                     {
-                        errors.Add(exception);
+                        threadErrors.Add(exception.Message);
                     }
                     finally
                     {
+                        availableStatusSlots.Enqueue(slotIndex);
+
                         App.MainWindow?.DispatcherQueue.TryEnqueue(() =>
                         {
+                            progressDialogViewModel.WorkerFileStatuses[slotIndex] = "Done...";
                             progressDialogViewModel.ProgressValue += 1.0 / pdfFilesCount * 100;
                         });
                     }
-                }
-            }, cts.Token);
+                });
+            }, _cts.Token);
         }
+
+        progressDialogViewModel.ProgressValue = 100;
+        errors.AddRange(threadErrors);
 
         if (isArchive)
         {
@@ -311,7 +370,7 @@ public partial class HomeViewModel : ObservableObject
                 string? resultDir = Path.GetDirectoryName(originalInputPath);
                 if (resultDir == null)
                 {
-                    errors.Add(new Exception(this._resourceLoader.GetString("GenericError")));
+                    errors.Add(this._resourceLoader.GetString("GenericError"));
                     return;
                 }
 
@@ -327,13 +386,13 @@ public partial class HomeViewModel : ObservableObject
                         new WriterOptions(CompressionType.Deflate)
                         {
                             ArchiveEncoding = new ArchiveEncoding { Forced = Encoding.UTF8 }
-                        }, cts.Token);
+                        }, _cts.Token);
 
-                await writer.WriteAllAsync(inputPath, "*", SearchOption.AllDirectories, cts.Token);
+                await writer.WriteAllAsync(inputPath, "*", SearchOption.AllDirectories, _cts.Token);
             }
             catch (Exception e)
             {
-                errors.Add(e);
+                errors.Add(e.Message);
             }
             finally
             {
@@ -345,11 +404,16 @@ public partial class HomeViewModel : ObservableObject
             }
         }
 
-
-        dialog.PrimaryButtonText = _resourceLoader.GetString("Finish");
-        dialog.CloseButtonText = string.Empty;
-        dialog.IsPrimaryButtonEnabled = true;
-
+        if (this._cts is { IsCancellationRequested: true } && errors.Count == 0)
+        {
+            dialog.Hide();
+        }
+        else
+        {
+            dialog.PrimaryButtonText = _resourceLoader.GetString("Finish");
+            dialog.CloseButtonText = string.Empty;
+            dialog.IsPrimaryButtonEnabled = true;
+        }
 
         if (errors.Count == 0)
         {
@@ -362,16 +426,18 @@ public partial class HomeViewModel : ObservableObject
             progressDialogViewModel.ShowError = true;
             progressDialogViewModel.ErrorList = errors;
         }
+
+        FilePath = "";
     }
 
-    public void OnDragOver(object sender, DragEventArgs e)
+    public void OnDragOver(object _, DragEventArgs e)
     {
         e.AcceptedOperation = DataPackageOperation.Copy;
         e.DragUIOverride.Caption = "Drop your file here";
         e.DragUIOverride.IsCaptionVisible = true;
     }
 
-    public async Task OnDrop(object sender, DragEventArgs e)
+    public async Task OnDrop(object _, DragEventArgs e)
     {
         if (!e.DataView.Contains(StandardDataFormats.StorageItems))
         {

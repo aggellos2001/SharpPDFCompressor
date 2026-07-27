@@ -1,7 +1,7 @@
 ﻿using Microsoft.UI.Xaml;
-using System;
 
 namespace SharpPDFCompressor;
+
 public partial class App : Application
 {
     public static Window? MainWindow { get; private set; }
@@ -11,7 +11,8 @@ public partial class App : Application
     public App()
     {
 #if DEBUG
-        Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "en-US";
+        Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "el-GR";
+        //Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "en-US";
 #endif
         InitializeComponent();
     }
