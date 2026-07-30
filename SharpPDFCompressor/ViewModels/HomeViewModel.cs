@@ -139,10 +139,8 @@ public partial class HomeViewModel : ObservableObject
         dialog.CloseButtonClick += (sender, args) =>
         {
             args.Cancel = true;
-
             if (this._cts is { IsCancellationRequested: true })
             {
-                dialog.Hide();
                 return;
             }
 
@@ -168,14 +166,10 @@ public partial class HomeViewModel : ObservableObject
         {
             if (isArchiveType != null)
             {
-                //await using Stream stream = File.OpenRead(inputPath);
-                //await using IAsyncReader reader =
-                //    await ReaderFactory.OpenAsyncReader(stream, cancellationToken: _cts.Token);
-
                 string? parentDir = Path.GetDirectoryName(inputPath);
                 if (parentDir == null)
                 {
-                    errors.Add("Something went wrong!");
+                    errors.Add(this._resourceLoader.GetString("GenericError"));
                 }
 
                 // first we extract the archive in the temp folder
@@ -260,10 +254,10 @@ public partial class HomeViewModel : ObservableObject
                     try
                     {
 
-                        if (file.Length >= 250)
-                        {
-                            throw new PathTooLongException(this._resourceLoader.GetString("LongNameException"));
-                        }
+                        //if (file.Length >= 250)
+                        //{
+                        //    throw new PathTooLongException(this._resourceLoader.GetString("LongNameException") + "Filename: " + file);
+                        //}
 
                         string? directoryName = Path.GetDirectoryName(file);
                         if (directoryName == null)
@@ -372,10 +366,19 @@ public partial class HomeViewModel : ObservableObject
             }, _cts.Token);
         }
 
+        // If cancellation is request return immediately the method and close the dialog.
+        // This code is reached after the try-catch is completed
+        if (this._cts is { IsCancellationRequested: true } && errors.Count == 0)
+        {
+            dialog.Hide();
+            FilePath = "";
+            return;
+        }
+
         progressDialogViewModel.ProgressValue = 100;
         errors.AddRange(threadErrors);
 
-        if (isArchive)
+        if (isArchive && errors.Count == 0)
         {
             try
             {
@@ -422,16 +425,11 @@ public partial class HomeViewModel : ObservableObject
             }
         }
 
-        if (this._cts is { IsCancellationRequested: true } && errors.Count == 0)
-        {
-            dialog.Hide();
-        }
-        else
-        {
-            dialog.PrimaryButtonText = _resourceLoader.GetString("Finish");
-            dialog.CloseButtonText = string.Empty;
-            dialog.IsPrimaryButtonEnabled = true;
-        }
+
+        dialog.PrimaryButtonText = _resourceLoader.GetString("Finish");
+        dialog.CloseButtonText = string.Empty;
+        dialog.IsPrimaryButtonEnabled = true;
+        progressDialogViewModel.ProgressValue = 100;
 
         if (errors.Count == 0)
         {
@@ -439,12 +437,10 @@ public partial class HomeViewModel : ObservableObject
         }
         else
         {
-            progressDialogViewModel.FileText = _resourceLoader.GetString("Failure");
-            progressDialogViewModel.ProgressValue = 100;
             progressDialogViewModel.ShowError = true;
             progressDialogViewModel.ErrorList = errors;
+            progressDialogViewModel.FileText = _resourceLoader.GetString("Failure");
         }
-
         FilePath = "";
     }
 

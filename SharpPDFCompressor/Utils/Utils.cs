@@ -9,6 +9,19 @@ namespace SharpPDFCompressor.Utils
     {
         private static readonly ResourceLoader ResourceLoader = new();
 
+        public static bool IsLongPathSupported()
+        {
+            try
+            {
+                string dummy = Path.GetTempPath() + new string('a', 200) + @"\" + new string('b', 100);
+                return Path.GetFullPath(dummy).Length > 260;
+            }
+            catch (PathTooLongException)
+            {
+                return false;
+            }
+        }
+
         public static void GetTempDir(out string tempRootPath)
         {
             try
@@ -23,7 +36,7 @@ namespace SharpPDFCompressor.Utils
 
         public static string GetSafeFileName(string fullPath, string suffix)
         {
-            const int maxPathLength = 255;
+            int maxPathLength = IsLongPathSupported() ? 32700 : 255;
             string directory = Path.GetDirectoryName(fullPath) ?? string.Empty;
             string extension = Path.GetExtension(fullPath);
             string fileName = Path.GetFileNameWithoutExtension(fullPath);
@@ -33,7 +46,7 @@ namespace SharpPDFCompressor.Utils
             int availableNameLength = maxPathLength - fixedLength;
             if (availableNameLength <= 0)
             {
-                throw new PathTooLongException(ResourceLoader.GetString("LongNameException"));
+                throw new PathTooLongException(ResourceLoader.GetString("LongNameException") + "Filename:  " + fullPath);
             }
 
             if (fileName.Length > availableNameLength)
