@@ -16,24 +16,24 @@
 
         <Grid Padding="30" HorizontalAlignment="Stretch" RowSpacing="15">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" x:Uid="HomeTitle" FontSize="26"/>
-            <TextBlock Grid.Row="1" x:Uid="HomeSubTitle"/>
+            <TextBlock Grid.Row="0" x:Uid="HomeTitle" FontSize="26" />
+            <TextBlock Grid.Row="1" x:Uid="HomeSubTitle" />
 
             <Grid Grid.Row="2" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
 
-                <TextBox Grid.Column="0" 
+                <TextBox Grid.Column="0"
                          x:Uid="FilePathTextBox"
                          MinHeight="50"
                          MaxHeight="100"
@@ -75,23 +75,24 @@
                                        HeaderIcon="{ui:FontIcon Glyph=&#xe73f;}"
                                        HorizontalAlignment="Stretch">
                     <ComboBox SelectedValue="{x:Bind ViewModel.CompressionLevel,Mode=TwoWay}" SelectedValuePath="Tag">
-                        <ComboBoxItem Tag="prepress" x:Uid="LowCompressionButton"></ComboBoxItem>
-                        <ComboBoxItem Tag="printer" x:Uid="MediumCompressionButton"></ComboBoxItem>
-                        <ComboBoxItem Tag="ebook" x:Uid="HighCompressionButton"></ComboBoxItem>
-                        <ComboBoxItem Tag="screen" x:Uid="MaxCompressionButton"></ComboBoxItem>
+                        <ComboBoxItem Tag="prepress" x:Uid="LowCompressionButton" />
+                        <ComboBoxItem Tag="printer" x:Uid="MediumCompressionButton" />
+                        <ComboBoxItem Tag="ebook" x:Uid="HighCompressionButton" />
+                        <ComboBoxItem Tag="screen" x:Uid="MaxCompressionButton" />
                     </ComboBox>
                 </controls:SettingsCard>
 
                 <controls:SettingsCard x:Uid="ParallelismLevel"
                                        HeaderIcon="{ui:FontIcon Glyph=&#xE9D5;}"
                                        HorizontalAlignment="Stretch">
-                    <ComboBox SelectedValue="{x:Bind ViewModel.ParallelismLevel,Mode=TwoWay}" SelectedValuePath="Content">
-                        <ComboBoxItem Content="1"></ComboBoxItem>
-                        <ComboBoxItem Content="2"></ComboBoxItem>
-                        <ComboBoxItem Content="4"></ComboBoxItem>
-                        <ComboBoxItem Content="8"></ComboBoxItem>
-                        <ComboBoxItem Content="16"></ComboBoxItem>
-                        <ComboBoxItem Content="32"></ComboBoxItem>
+                    <ComboBox SelectedValue="{x:Bind ViewModel.ParallelismLevel,Mode=TwoWay}"
+                              SelectedValuePath="Content">
+                        <ComboBoxItem Content="1" />
+                        <ComboBoxItem Content="2" />
+                        <ComboBoxItem Content="4" />
+                        <ComboBoxItem Content="8" />
+                        <ComboBoxItem Content="16" />
+                        <ComboBoxItem Content="32" />
                     </ComboBox>
                 </controls:SettingsCard>
 
@@ -112,7 +113,7 @@
                     Margin="0 15"
                     Style="{StaticResource AccentButtonStyle}">
                 <StackPanel Orientation="Horizontal">
-                    <FontIcon Margin="00 0 10 0" FontFamily="Segoe Fluent Icons" Glyph="&#xf012;"/>
+                    <FontIcon Margin="00 0 10 0" FontFamily="Segoe Fluent Icons" Glyph="&#xf012;" />
                     <TextBlock x:Uid="InnerCompressButton" />
                 </StackPanel>
             </Button>

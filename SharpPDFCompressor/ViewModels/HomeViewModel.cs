@@ -29,17 +29,16 @@ namespace SharpPDFCompressor.ViewModels;
 
 public partial class HomeViewModel : ObservableObject
 {
+    private const string CompressedSuffix = "_compressed";
     private static readonly string DllPath = Path.Combine(AppContext.BaseDirectory, "Runtimes", "gsdll64.dll");
     private readonly ResourceLoader _resourceLoader = new();
     private CancellationTokenSource? _cts;
 
-    private const string CompressedPdfSuffix = "_compressed";
-
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CompressionButtonEnabled))]
-    public partial string FilePath { get; set; } = string.Empty;
+    public partial string FilePath { get; private set; } = string.Empty;
 
-    public bool CompressionButtonEnabled => !string.IsNullOrWhiteSpace(FilePath) && Path.Exists(FilePath);
+    public bool CompressionButtonEnabled => !string.IsNullOrWhiteSpace(this.FilePath) && Path.Exists(this.FilePath);
 
     [ObservableProperty] public partial string CompressionLevel { get; set; } = "ebook";
 
@@ -76,7 +75,7 @@ public partial class HomeViewModel : ObservableObject
             InitializeWithWindow.Initialize(openPicker, hWnd);
             StorageFile? file = await openPicker.PickSingleFileAsync();
 
-            FilePath = file?.Path ?? string.Empty;
+            this.FilePath = file?.Path ?? string.Empty;
         }
         else
         {
@@ -88,31 +87,31 @@ public partial class HomeViewModel : ObservableObject
             openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
             openPicker.FileTypeFilter.Add(".pdf");
             StorageFolder? folder = await openPicker.PickSingleFolderAsync();
-            FilePath = folder?.Path ?? string.Empty;
+            this.FilePath = folder?.Path ?? string.Empty;
         }
     }
 
     [RelayCommand]
     public async Task Compress(XamlRoot xamlRoot)
     {
-        _cts = new CancellationTokenSource();
+        this._cts = new CancellationTokenSource();
 
         this._cts.Token.Register(() =>
         {
-            FilePath = "";
+            this.FilePath = "";
         });
 
-        int maxWorkers = int.Parse(ParallelismLevel);
+        int maxWorkers = int.Parse(this.ParallelismLevel);
 
 
         XamlUICommand buttonCancelCommand = new();
-        buttonCancelCommand.ExecuteRequested += (s, q) =>
+        buttonCancelCommand.ExecuteRequested += (_, _) =>
         {
             try
             {
-                if (_cts is { IsCancellationRequested: false })
+                if (this._cts is { IsCancellationRequested: false })
                 {
-                    _cts.Cancel();
+                    this._cts.Cancel();
                 }
             }
             catch (ObjectDisposedException)
@@ -129,14 +128,14 @@ public partial class HomeViewModel : ObservableObject
         {
             XamlRoot = xamlRoot,
             Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-            Title = _resourceLoader.GetString("Compressing"),
+            Title = this._resourceLoader.GetString("Compressing"),
             PrimaryButtonText = string.Empty,
-            CloseButtonText = _resourceLoader.GetString("Cancel"),
+            CloseButtonText = this._resourceLoader.GetString("Cancel"),
             CloseButtonCommand = buttonCancelCommand,
             DefaultButton = ContentDialogButton.Primary,
             IsPrimaryButtonEnabled = false
         };
-        dialog.CloseButtonClick += (sender, args) =>
+        dialog.CloseButtonClick += (_, args) =>
         {
             args.Cancel = true;
             if (this._cts is { IsCancellationRequested: true })
@@ -152,10 +151,10 @@ public partial class HomeViewModel : ObservableObject
 
         dialog.ShowAsync();
 
-        string inputPath = FilePath;
-        string quality = CompressionLevel;
-        ConcurrentBag<String> threadErrors = [];
-        List<String> errors = [];
+        string inputPath = this.FilePath;
+        string quality = this.CompressionLevel;
+        ConcurrentBag<string> threadErrors = [];
+        List<string> errors = [];
         IEnumerable<string> files = [];
 
         string originalInputPath = string.Empty;
@@ -187,16 +186,14 @@ public partial class HomeViewModel : ObservableObject
                         using IArchive archive = ArchiveFactory.OpenArchive(inputPath);
                         ExtractionOptions options = new()
                         {
-                            ExtractFullPath = true,
-                            PreserveFileTime = true,
-                            Overwrite = true
+                            ExtractFullPath = true, PreserveFileTime = true, Overwrite = true
                         };
                         foreach (IArchiveEntry entry in archive.Entries.Where(e => !e.IsDirectory))
                         {
-                            _cts.Token.ThrowIfCancellationRequested();
+                            this._cts.Token.ThrowIfCancellationRequested();
                             entry.WriteToDirectory(zipExtractionDir, options);
                         }
-                    }, _cts.Token);
+                    }, this._cts.Token);
                 }
                 catch (OperationCanceledException)
                 {
@@ -219,7 +216,7 @@ public partial class HomeViewModel : ObservableObject
         if (Directory.Exists(inputPath))
         {
             // Loop through all PDFs in the folder
-            files = [.. Directory.EnumerateFiles(inputPath, "*.*", SearchOption.AllDirectories)];
+            files = Directory.EnumerateFiles(inputPath, "*.*", SearchOption.AllDirectories).ToArray();
             pdfFilesCount = files.Count(file => file.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase));
         }
         else if (File.Exists(inputPath) && Path.GetExtension(inputPath).ToLower().EndsWith("pdf"))
@@ -232,7 +229,7 @@ public partial class HomeViewModel : ObservableObject
             errors.Add(this._resourceLoader.GetString("InvalidFileException"));
         }
 
-        progressDialogViewModel.FileText = $"{_resourceLoader.GetString("CompressingStatus")}";
+        progressDialogViewModel.FileText = $"{this._resourceLoader.GetString("CompressingStatus")}";
 
 
         if (errors.Count == 0)
@@ -243,17 +240,20 @@ public partial class HomeViewModel : ObservableObject
             {
                 Parallel.ForEach(files, parallelOptions, file =>
                 {
-                    if (_cts.Token.IsCancellationRequested)
+                    if (this._cts.Token.IsCancellationRequested)
                     {
                         return;
                     }
 
-                    if (_cts.Token.IsCancellationRequested) return;
+                    if (this._cts.Token.IsCancellationRequested)
+                    {
+                        return;
+                    }
+
                     availableStatusSlots.TryDequeue(out int slotIndex);
 
                     try
                     {
-
                         //if (file.Length >= 250)
                         //{
                         //    throw new PathTooLongException(this._resourceLoader.GetString("LongNameException") + "Filename: " + file);
@@ -267,10 +267,12 @@ public partial class HomeViewModel : ObservableObject
                         }
 
                         string extension = Path.GetExtension(file);
-                        if (!extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase)) return;
+                        if (!extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
+                        {
+                            return;
+                        }
 
-                        string safeFileName = AppUtils.GetSafeFileName(file, "_compressed");
-                        //string baseNewName = $"{safeFileName}_compressed";
+                        string safeFileName = AppUtils.GetSafeFileName(file, CompressedSuffix);
                         string compressedFileName = Path.Combine(directoryName, $"{safeFileName}");
                         int counter = 1;
 
@@ -286,7 +288,7 @@ public partial class HomeViewModel : ObservableObject
                         App.MainWindow?.DispatcherQueue.TryEnqueue(() =>
                         {
                             progressDialogViewModel.WorkerFileStatuses[slotIndex] =
-                                $"{_resourceLoader.GetString("Compressing")} {file}";
+                                $"{this._resourceLoader.GetString("Compressing")} {file}";
                         });
 
                         GCMemoryInfo memInfo = GC.GetGCMemoryInfo();
@@ -363,7 +365,7 @@ public partial class HomeViewModel : ObservableObject
                         });
                     }
                 });
-            }, _cts.Token);
+            }, this._cts.Token);
         }
 
         // If cancellation is request return immediately the method and close the dialog.
@@ -371,7 +373,7 @@ public partial class HomeViewModel : ObservableObject
         if (this._cts is { IsCancellationRequested: true } && errors.Count == 0)
         {
             dialog.Hide();
-            FilePath = "";
+            this.FilePath = "";
             return;
         }
 
@@ -390,11 +392,11 @@ public partial class HomeViewModel : ObservableObject
                 }
 
                 string originalArchiveName = Path.GetFileNameWithoutExtension(originalInputPath);
-                string destName = Path.Combine(resultDir, $"{originalArchiveName}_compressed.zip");
+                string destName = Path.Combine(resultDir, $"{originalArchiveName}${CompressedSuffix}.zip");
                 int counter = 1;
                 while (File.Exists(destName))
                 {
-                    destName = Path.Combine(resultDir, $"{originalArchiveName}_compressed({counter}).zip");
+                    destName = Path.Combine(resultDir, $"{originalArchiveName}${CompressedSuffix}({counter}).zip");
                     counter++;
                 }
 
@@ -407,9 +409,9 @@ public partial class HomeViewModel : ObservableObject
                         new WriterOptions(CompressionType.Deflate)
                         {
                             ArchiveEncoding = new ArchiveEncoding { Forced = Encoding.UTF8 }
-                        }, _cts.Token);
+                        }, this._cts.Token);
 
-                await writer.WriteAllAsync(inputPath, "*", SearchOption.AllDirectories, _cts.Token);
+                await writer.WriteAllAsync(inputPath, "*", SearchOption.AllDirectories, this._cts.Token);
             }
             catch (Exception e)
             {
@@ -426,22 +428,23 @@ public partial class HomeViewModel : ObservableObject
         }
 
 
-        dialog.PrimaryButtonText = _resourceLoader.GetString("Finish");
+        dialog.PrimaryButtonText = this._resourceLoader.GetString("Finish");
         dialog.CloseButtonText = string.Empty;
         dialog.IsPrimaryButtonEnabled = true;
         progressDialogViewModel.ProgressValue = 100;
 
         if (errors.Count == 0)
         {
-            progressDialogViewModel.FileText = _resourceLoader.GetString("Success");
+            progressDialogViewModel.FileText = this._resourceLoader.GetString("Success");
         }
         else
         {
             progressDialogViewModel.ShowError = true;
             progressDialogViewModel.ErrorList = errors;
-            progressDialogViewModel.FileText = _resourceLoader.GetString("Failure");
+            progressDialogViewModel.FileText = this._resourceLoader.GetString("Failure");
         }
-        FilePath = "";
+
+        this.FilePath = "";
     }
 
     public void OnDragOver(object _, DragEventArgs e)

@@ -1,6 +1,5 @@
 ﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
@@ -13,7 +12,7 @@ public partial class ProgressDialogViewModel : ObservableObject
     [ObservableProperty] public partial double ProgressValue { get; set; }
     [ObservableProperty] public partial string? FileText { get; set; }
     [ObservableProperty] public partial bool ShowError { get; set; }
-    [ObservableProperty] public partial List<String>? ErrorList { get; set; }
+    [ObservableProperty] public partial List<string>? ErrorList { get; set; }
     [ObservableProperty] public partial string? SelectedListError { get; set; }
     [ObservableProperty] public partial bool TipShown { get; set; }
 
@@ -23,27 +22,27 @@ public partial class ProgressDialogViewModel : ObservableObject
     [RelayCommand]
     public async Task CopyErrorToClipboard()
     {
-        string textToCopy = SelectedListError ?? "";
+        string textToCopy = this.SelectedListError ?? "";
         if (!string.IsNullOrEmpty(textToCopy))
         {
-            var dataPackage = new DataPackage();
+            DataPackage dataPackage = new();
             dataPackage.SetText(textToCopy);
             Clipboard.SetContent(dataPackage);
 
-            TipShown = true;
+            this.TipShown = true;
             await Task.Delay(2000);
-            TipShown = false;
+            this.TipShown = false;
         }
 
-        SelectedListError = null;
+        this.SelectedListError = null;
     }
 
     public void InitializeWorkers(int maxWorkers)
     {
-        WorkerFileStatuses.Clear();
+        this.WorkerFileStatuses.Clear();
         for (int i = 0; i < maxWorkers; i++)
         {
-            WorkerFileStatuses.Add("Waiting...");
+            this.WorkerFileStatuses.Add("Waiting...");
         }
     }
 }

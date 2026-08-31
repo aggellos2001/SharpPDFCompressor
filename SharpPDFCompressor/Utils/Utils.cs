@@ -3,59 +3,59 @@ using System;
 using System.IO;
 using Windows.Storage;
 
-namespace SharpPDFCompressor.Utils
+namespace SharpPDFCompressor.Utils;
+
+public static class AppUtils
 {
-    public class AppUtils
+    private static readonly ResourceLoader ResourceLoader = new();
+
+    private static bool IsLongPathSupported()
     {
-        private static readonly ResourceLoader ResourceLoader = new();
-
-        public static bool IsLongPathSupported()
+        try
         {
-            try
-            {
-                string dummy = Path.GetTempPath() + new string('a', 200) + @"\" + new string('b', 100);
-                return Path.GetFullPath(dummy).Length > 260;
-            }
-            catch (PathTooLongException)
-            {
-                return false;
-            }
+            string dummy = Path.GetTempPath() + new string('a', 200) + @"\" + new string('b', 100);
+            return Path.GetFullPath(dummy).Length > 260;
+        }
+        catch (PathTooLongException)
+        {
+            return false;
+        }
+    }
+
+    public static void GetTempDir(out string tempRootPath)
+    {
+        try
+        {
+            tempRootPath = ApplicationData.Current.TemporaryFolder.Path;
+        }
+        catch (InvalidOperationException)
+        {
+            tempRootPath = Path.GetTempPath();
+        }
+    }
+
+    public static string GetSafeFileName(string fullPath, string suffix)
+    {
+        int maxPathLength = IsLongPathSupported() ? 32700 : 255;
+        string directory = Path.GetDirectoryName(fullPath) ?? string.Empty;
+        string extension = Path.GetExtension(fullPath);
+        string fileName = Path.GetFileNameWithoutExtension(fullPath);
+        int directoryLength = string.IsNullOrEmpty(directory) ? 0 : directory.Length + 1;
+
+        int fixedLength = directoryLength + suffix.Length + extension.Length;
+        int availableNameLength = maxPathLength - fixedLength;
+        if (availableNameLength <= 0)
+        {
+            throw new PathTooLongException(ResourceLoader.GetString("LongNameException") + "Filename:  " +
+                                           fullPath);
         }
 
-        public static void GetTempDir(out string tempRootPath)
+        if (fileName.Length > availableNameLength)
         {
-            try
-            {
-                tempRootPath = ApplicationData.Current.TemporaryFolder.Path;
-            }
-            catch (InvalidOperationException)
-            {
-                tempRootPath = Path.GetTempPath();
-            }
+            fileName = fileName[..availableNameLength];
         }
 
-        public static string GetSafeFileName(string fullPath, string suffix)
-        {
-            int maxPathLength = IsLongPathSupported() ? 32700 : 255;
-            string directory = Path.GetDirectoryName(fullPath) ?? string.Empty;
-            string extension = Path.GetExtension(fullPath);
-            string fileName = Path.GetFileNameWithoutExtension(fullPath);
-            int directoryLength = string.IsNullOrEmpty(directory) ? 0 : directory.Length + 1;
-
-            int fixedLength = directoryLength + suffix.Length + extension.Length;
-            int availableNameLength = maxPathLength - fixedLength;
-            if (availableNameLength <= 0)
-            {
-                throw new PathTooLongException(ResourceLoader.GetString("LongNameException") + "Filename:  " + fullPath);
-            }
-
-            if (fileName.Length > availableNameLength)
-            {
-                fileName = fileName[..availableNameLength];
-            }
-
-            string safeFileName = $"{fileName}{suffix}{extension}";
-            return string.IsNullOrEmpty(directory) ? safeFileName : Path.Combine(directory, safeFileName);
-        }
+        string safeFileName = $"{fileName}{suffix}{extension}";
+        return string.IsNullOrEmpty(directory) ? safeFileName : Path.Combine(directory, safeFileName);
     }
 }

@@ -9,10 +9,10 @@ public sealed partial class Home : Page
 {
     private static readonly string DllPath = Path.Combine(AppContext.BaseDirectory, "Runtimes", "gsdll64.dll");
 
-    public HomeViewModel ViewModel { get; } = new();
-
     public Home()
     {
-        InitializeComponent();
+        this.InitializeComponent();
     }
+
+    public HomeViewModel ViewModel { get; } = new();
 }

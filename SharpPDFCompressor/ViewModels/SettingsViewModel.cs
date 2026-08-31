@@ -28,8 +28,7 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    [ObservableProperty]
-    public partial ObservableCollection<PackageLicense>? Licenses { get; set; }
+    [ObservableProperty] public partial ObservableCollection<PackageLicense>? Licenses { get; set; }
 
     public async Task LoadLicenses()
     {
@@ -38,7 +37,7 @@ public partial class SettingsViewModel : ObservableObject
         {
             string jsonText = await File.ReadAllTextAsync(filePath);
             List<PackageLicense>? licenses = JsonSerializer.Deserialize<List<PackageLicense>>(jsonText);
-            Licenses = new ObservableCollection<PackageLicense>(licenses ?? []);
+            this.Licenses = new ObservableCollection<PackageLicense>(licenses ?? []);
         }
     }
 }

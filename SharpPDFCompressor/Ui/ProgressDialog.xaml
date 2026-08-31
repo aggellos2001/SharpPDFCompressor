@@ -2,8 +2,7 @@
     x:Class="SharpPDFCompressor.Ui.ProgressDialog"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Style="{StaticResource DefaultContentDialogStyle}"
-    xmlns:system="using:System">
+    Style="{StaticResource DefaultContentDialogStyle}">
 
     <Grid RowSpacing="16" MinWidth="350" MaxWidth="450">
         <Grid.RowDefinitions>
@@ -14,13 +13,13 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
-                   Text="{x:Bind ViewModel.FileText, Mode=OneWay}" 
+                   Text="{x:Bind ViewModel.FileText, Mode=OneWay}"
                    TextWrapping="Wrap"
                    Style="{StaticResource BodyStrongTextBlockStyle}"
                    Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
 
         <ProgressBar Grid.Row="1"
-                     HorizontalAlignment="Stretch" 
+                     HorizontalAlignment="Stretch"
                      MinHeight="4"
                      Value="{x:Bind ViewModel.ProgressValue, Mode=OneWay}"
                      ShowError="{x:Bind ViewModel.ShowError, Mode=OneWay}" />
@@ -35,35 +34,35 @@
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
 
-                            <FontIcon Glyph="&#xE8D5;" 
-                                      FontSize="12" 
-                                      Foreground="{ThemeResource TextFillColorTertiaryBrush}" 
-                                      Margin="0,0,12,0" 
-                                      VerticalAlignment="Center"/>
+                            <FontIcon Glyph="&#xE8D5;"
+                                      FontSize="12"
+                                      Foreground="{ThemeResource TextFillColorTertiaryBrush}"
+                                      Margin="0,0,12,0"
+                                      VerticalAlignment="Center" />
 
-                            <TextBlock Grid.Column="1" 
-                                       Text="{Binding}" 
-                                       FontSize="12" 
+                            <TextBlock Grid.Column="1"
+                                       Text="{Binding}"
+                                       FontSize="12"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        TextWrapping="Wrap"
-                                       VerticalAlignment="Center"/>
+                                       VerticalAlignment="Center" />
                         </Grid>
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
         </ScrollView>
 
-        <Grid Grid.Row="3" 
+        <Grid Grid.Row="3"
               Visibility="{x:Bind ViewModel.ShowError, Mode=OneWay}"
               RowSpacing="8">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
             <TextBlock Grid.Row="0"
-                       Text="Errors encountered" 
-                       Style="{StaticResource CaptionTextBlockStyle}" 
+                       Text="Errors encountered"
+                       Style="{StaticResource CaptionTextBlockStyle}"
                        Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
 
             <ListView Grid.Row="1"
@@ -82,9 +81,9 @@
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <TextBlock Text="{Binding}"
-                                   TextWrapping="Wrap" 
+                                   TextWrapping="Wrap"
                                    Margin="0,8"
-                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}"/>
+                                   Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
                     </DataTemplate>
                 </ListView.ItemTemplate>
 
@@ -92,13 +91,13 @@
                     <Style TargetType="ListViewItem">
                         <Setter Property="HorizontalContentAlignment" Value="Stretch" />
                         <Setter Property="Margin" Value="4,2" />
-                        <Setter Property="CornerRadius" Value="4"/>
+                        <Setter Property="CornerRadius" Value="4" />
                     </Style>
                 </ListView.ItemContainerStyle>
             </ListView>
         </Grid>
 
-        <TeachingTip x:Uid="CopiedErrorTeachingTip"
+        <TeachingTip Grid.Row="0" x:Uid="CopiedErrorTeachingTip"
                      Target="{x:Bind DialogErrorList}"
                      PreferredPlacement="Top"
                      IsLightDismissEnabled="True"

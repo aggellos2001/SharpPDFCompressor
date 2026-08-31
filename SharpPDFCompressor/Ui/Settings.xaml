@@ -7,17 +7,16 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:SharpPDFCompressor.DataModels"
-    xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Padding="20 0" HorizontalAlignment="Stretch" RowSpacing="10">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid HorizontalAlignment="Stretch" Padding="0 20">
                 <Grid.ColumnDefinitions>
@@ -38,10 +37,10 @@
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <Image Width="16" Height="16" VerticalAlignment="Center">
                             <Image.Source>
-                                <SvgImageSource UriSource="ms-appx:///Assets/GitHub_Invertocat_Black.svg"/>
+                                <SvgImageSource UriSource="ms-appx:///Assets/GitHub_Invertocat_Black.svg" />
                             </Image.Source>
                         </Image>
-                        <TextBlock Text="View on GitHub" VerticalAlignment="Center"/>
+                        <TextBlock Text="View on GitHub" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </controls:SettingsCard>
@@ -49,11 +48,11 @@
             <controls:SettingsCard Grid.Row="2" x:Uid="LogoAttribution">
                 <Button Click="LogoLinkedInOpenLink">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Image Source="ms-appx:///Assets/LI-In-Bug.png" 
+                        <Image Source="ms-appx:///Assets/LI-In-Bug.png"
                                Width="16"
-                               Height="16" 
-                               VerticalAlignment="Center"/>
-                        <TextBlock Text="View on LinkedIn" VerticalAlignment="Center"/>
+                               Height="16"
+                               VerticalAlignment="Center" />
+                        <TextBlock Text="View on LinkedIn" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </controls:SettingsCard>

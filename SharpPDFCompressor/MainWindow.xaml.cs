@@ -17,12 +17,12 @@ public sealed partial class MainWindow : WindowEx
 #endif
     public MainWindow()
     {
-        InitializeComponent();
+        this.InitializeComponent();
         //navigates to the home screen when the application opens
-        HomePageSideButton.IsSelected = true;
+        this.HomePageSideButton.IsSelected = true;
 
-        ExtendsContentIntoTitleBar = true;
-        SetTitleBar(this.AppTitleBar);
+        this.ExtendsContentIntoTitleBar = true;
+        this.SetTitleBar(this.AppTitleBar);
 
         if (!MicaController.IsSupported())
         {
@@ -34,12 +34,12 @@ public sealed partial class MainWindow : WindowEx
 
         if (this.Content is FrameworkElement rootElement)
         {
-            rootElement.LayoutUpdated += OnContentLayoutUpdated;
+            rootElement.LayoutUpdated += this.OnContentLayoutUpdated;
         }
 
         if (IsDebug)
         {
-            AppTitleBar.Subtitle = "Debug build";
+            this.AppTitleBar.Subtitle = "Debug build";
         }
     }
 
@@ -49,13 +49,13 @@ public sealed partial class MainWindow : WindowEx
 
         if (args.IsSettingsSelected)
         {
-            ContentFrame.Navigate(typeof(Settings));
+            this.ContentFrame.Navigate(typeof(Settings));
         }
 
         switch (tag)
         {
             case "HomePageSideButton":
-                ContentFrame.Navigate(typeof(Home));
+                this.ContentFrame.Navigate(typeof(Home));
                 break;
         }
     }
