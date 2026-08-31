@@ -47,7 +47,7 @@ public partial class HomeViewModel : ObservableObject
     [ObservableProperty] public partial bool DeleteOriginalFiles { get; set; }
 
     [RelayCommand]
-    public async Task SelectFile(string? folderPicker)
+    private async Task SelectFile(string? folderPicker)
     {
         bool tryParse = TryParse(folderPicker, out bool folderPickerBool);
 
@@ -92,7 +92,7 @@ public partial class HomeViewModel : ObservableObject
     }
 
     [RelayCommand]
-    public async Task Compress(XamlRoot xamlRoot)
+    private async Task Compress(XamlRoot xamlRoot)
     {
         this._cts = new CancellationTokenSource();
 
@@ -118,7 +118,6 @@ public partial class HomeViewModel : ObservableObject
             {
             }
         };
-
 
         ProgressDialogViewModel progressDialogViewModel = new();
         progressDialogViewModel.InitializeWorkers(maxWorkers);
@@ -254,11 +253,7 @@ public partial class HomeViewModel : ObservableObject
 
                     try
                     {
-                        //if (file.Length >= 250)
-                        //{
-                        //    throw new PathTooLongException(this._resourceLoader.GetString("LongNameException") + "Filename: " + file);
-                        //}
-
+                      
                         string? directoryName = Path.GetDirectoryName(file);
                         if (directoryName == null)
                         {

@@ -1,5 +1,5 @@
 ﻿using Microsoft.UI.Xaml;
-using Microsoft.Windows.Globalization;
+using Windows.Globalization;
 
 namespace SharpPDFCompressor;
 

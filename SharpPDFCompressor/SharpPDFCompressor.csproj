@@ -59,6 +59,7 @@
         <Page Update="Home.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
+        <Page Remove="obj\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -81,12 +82,13 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EditorConfigFiles Remove="C:\Users\aggel\DotNetProjects\SharpPDFCompressor\SharpPDFCompressor\.editorconfig"/>
+        <EditorConfigFiles Remove="C:\Users\aggel\DotNetProjects\SharpPDFCompressor\SharpPDFCompressor\.editorconfig" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="licenses.json"/>
-        <None Remove="Runtimes\gsdll64.dll"/>
+        <None Remove="licenses.json" />
+        <None Remove="Runtimes\gsdll64.dll" />
+        <None Remove="obj\**" />
     </ItemGroup>
 
     <ItemGroup>
@@ -96,7 +98,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <None Include="C:\Users\aggel\DotNetProjects\SharpPDFCompressor\SharpPDFCompressor\.editorconfig"/>
+        <None Include="C:\Users\aggel\DotNetProjects\SharpPDFCompressor\SharpPDFCompressor\.editorconfig" />
     </ItemGroup>
 
     <ItemGroup>
@@ -280,6 +282,12 @@
         <Content Update="Assets\Wide310x150Logo.scale-400.png">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Update="ViewModels\Compressor.cs">
+        <DependentUpon>HomeViewModel.cs</DependentUpon>
+      </Compile>
     </ItemGroup>
 
     <Target Name="GenerateLicenses" BeforeTargets="PreBuildEvent">

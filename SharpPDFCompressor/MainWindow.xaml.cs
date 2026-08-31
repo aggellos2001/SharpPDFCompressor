@@ -9,7 +9,7 @@ namespace SharpPDFCompressor;
 
 public sealed partial class MainWindow : WindowEx
 {
-    public static bool IsDebug =>
+    private static bool IsDebug =>
 #if DEBUG
         true;
 #else
