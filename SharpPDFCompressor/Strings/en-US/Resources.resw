@@ -176,7 +176,7 @@ You can also compress all the .pdf files inside an archive file (.zip, tar.gz, e
     <value>Finish</value>
   </data>
   <data name="CopiedErrorTeachingTip.Title" xml:space="preserve">
-    <value>The error is copied to the clipboard</value>
+    <value>The error is copied to the clipboard.</value>
   </data>
   <data name="SettingsTitle.Text" xml:space="preserve">
     <value>About</value>

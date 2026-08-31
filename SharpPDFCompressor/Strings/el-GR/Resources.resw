@@ -185,7 +185,7 @@
     <value>Το αρχείο που επιλέξατε δεν είναι pdf ή δεν υπάρχει.</value>
   </data>
   <data name="CompressionLevelGroup.Description" xml:space="preserve">
-    <value>Επιλέξτε μεταξύ τεσσάρων επιπέδων συμπίεσης</value>
+    <value>Επιλέξτε μεταξύ τεσσάρων επιπέδων συμπίεσης.</value>
   </data>
   <data name="DeleteOriginalFilesSwitch.Header" xml:space="preserve">
     <value>Διαγραφή των αρχικών .pdf αρχείων</value>
