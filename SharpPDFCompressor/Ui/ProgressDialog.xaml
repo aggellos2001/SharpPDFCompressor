@@ -13,7 +13,7 @@
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
-                   Text="{x:Bind ViewModel.FileText, Mode=OneWay}"
+                   Text="{x:Bind ViewModel.CurrentFileBeingCompressed, Mode=OneWay}"
                    TextWrapping="Wrap"
                    Style="{StaticResource BodyStrongTextBlockStyle}"
                    Foreground="{ThemeResource TextFillColorPrimaryBrush}" />

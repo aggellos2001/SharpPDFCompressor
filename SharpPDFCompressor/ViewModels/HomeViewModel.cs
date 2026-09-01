@@ -144,7 +144,7 @@ public partial class HomeViewModel : ObservableObject
 
             this._cts.Cancel();
             dialog.Title = this._resourceLoader.GetString("CancelOperation");
-            progressDialogViewModel.FileText = this._resourceLoader.GetString("CancelOperationExplanation");
+            progressDialogViewModel.CurrentFileBeingCompressed = this._resourceLoader.GetString("CancelOperationExplanation");
             dialog.CloseButtonText = this._resourceLoader.GetString("PleaseWait");
         };
 
@@ -228,7 +228,7 @@ public partial class HomeViewModel : ObservableObject
             errors.Add(this._resourceLoader.GetString("InvalidFileException"));
         }
 
-        progressDialogViewModel.FileText = $"{this._resourceLoader.GetString("CompressingStatus")}";
+        progressDialogViewModel.CurrentFileBeingCompressed = $"{this._resourceLoader.GetString("CompressingStatus")}";
 
 
         if (errors.Count == 0)
@@ -239,11 +239,6 @@ public partial class HomeViewModel : ObservableObject
             {
                 Parallel.ForEach(files, parallelOptions, file =>
                 {
-                    if (this._cts.Token.IsCancellationRequested)
-                    {
-                        return;
-                    }
-
                     if (this._cts.Token.IsCancellationRequested)
                     {
                         return;
@@ -430,13 +425,13 @@ public partial class HomeViewModel : ObservableObject
 
         if (errors.Count == 0)
         {
-            progressDialogViewModel.FileText = this._resourceLoader.GetString("Success");
+            progressDialogViewModel.CurrentFileBeingCompressed = this._resourceLoader.GetString("Success");
         }
         else
         {
             progressDialogViewModel.ShowError = true;
             progressDialogViewModel.ErrorList = errors;
-            progressDialogViewModel.FileText = this._resourceLoader.GetString("Failure");
+            progressDialogViewModel.CurrentFileBeingCompressed = this._resourceLoader.GetString("Failure");
         }
 
         this.FilePath = "";
