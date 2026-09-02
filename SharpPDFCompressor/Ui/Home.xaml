@@ -96,7 +96,8 @@
                     </ComboBox>
                 </controls:SettingsCard>
 
-                <controls:SettingsCard x:Uid="DeleteOriginalFilesSwitch"
+                <controls:SettingsCard Header="{x:Bind ViewModel.DeleteOriginalCardHeader,Mode=OneWay}"
+                                       Description="{x:Bind ViewModel.DeleteOriginalCardDescription,Mode=OneWay}"
                                        HeaderIcon="{ui:FontIcon Glyph=&#xE107;}"
                                        HorizontalAlignment="Stretch">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.DeleteOriginalFiles, Mode=TwoWay}" />

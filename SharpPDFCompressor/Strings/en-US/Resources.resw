@@ -233,4 +233,10 @@ I welcome and encourage contributions to the code of this application. You can r
   <data name="LongNameException" xml:space="preserve">
     <value>The file name path exceeds the maximum size of 250 characters. Please make the folder and file names shorter and try again.</value>
   </data>
+  <data name="CreateNewFolder.Description" xml:space="preserve">
+    <value>When this feature is enabled, all compressed PDF files will be saved in a new folder located alongside the folder you selected for compression.</value>
+  </data>
+  <data name="CreateNewFolder.Header" xml:space="preserve">
+    <value>Create a new directory</value>
+  </data>
 </root>

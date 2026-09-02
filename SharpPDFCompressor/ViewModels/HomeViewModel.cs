@@ -20,6 +20,7 @@ namespace SharpPDFCompressor.ViewModels;
 
 public partial class HomeViewModel : ObservableObject
 {
+
     private const string CompressedSuffix = "_compressed";
     private static readonly string DllPath = Path.Combine(AppContext.BaseDirectory, "Runtimes", "gsdll64.dll");
     private readonly ResourceLoader _resourceLoader = new();
@@ -36,6 +37,16 @@ public partial class HomeViewModel : ObservableObject
     [ObservableProperty] public partial string ParallelismLevel { get; set; } = "4";
 
     [ObservableProperty] public partial bool DeleteOriginalFiles { get; set; }
+
+    [ObservableProperty] public partial string DeleteOriginalCardHeader { get; set; }
+
+    [ObservableProperty] public partial string DeleteOriginalCardDescription { get; set; }
+
+    public HomeViewModel()
+    {
+        DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
+        DeleteOriginalCardDescription = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
+    }
 
     [RelayCommand]
     private async Task SelectFile(string? folderPicker)
@@ -67,6 +78,8 @@ public partial class HomeViewModel : ObservableObject
             StorageFile? file = await openPicker.PickSingleFileAsync();
 
             this.FilePath = file?.Path ?? string.Empty;
+            DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
+            DeleteOriginalCardDescription = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
         }
         else
         {
@@ -79,7 +92,12 @@ public partial class HomeViewModel : ObservableObject
             openPicker.FileTypeFilter.Add(".pdf");
             StorageFolder? folder = await openPicker.PickSingleFolderAsync();
             this.FilePath = folder?.Path ?? string.Empty;
+
+            DeleteOriginalCardHeader = this._resourceLoader.GetString("CreateNewFolder/Header");
+            DeleteOriginalCardDescription = this._resourceLoader.GetString("CreateNewFolder/Description");
         }
+
+
     }
 
     [RelayCommand]
@@ -154,18 +172,53 @@ public partial class HomeViewModel : ObservableObject
             }
         });
 
-        FileCompressor compressor = new()
+        Compressor compressor;
+
+        if (Directory.Exists(this.FilePath))
         {
-            FilePath = this.FilePath,
-            CompressionLevel = this.CompressionLevel,
-            NumOfThreads = int.Parse(this.ParallelismLevel),
-            ProgressHandler = progressHandler,
-            Ct = this._cts.Token
-        };
+            compressor = new DirectoryCompressor()
+            {
+                InputFilesPath = this.FilePath,
+                CompressionLevel = this.CompressionLevel,
+                NumOfThreads = int.Parse(this.ParallelismLevel),
+                ProgressHandler = progressHandler,
+                DeleteOriginalFiles = this.DeleteOriginalFiles,
+                Ct = this._cts.Token
+            };
+        }
+        else
+        {
+            compressor = new FileCompressor()
+            {
+                InputFilesPath = this.FilePath,
+                CompressionLevel = this.CompressionLevel,
+                NumOfThreads = int.Parse(this.ParallelismLevel),
+                ProgressHandler = progressHandler,
+                DeleteOriginalFiles = this.DeleteOriginalFiles,
+                Ct = this._cts.Token
+            };
+        }
+
 
         dialog.ShowAsync();
 
-        await compressor.ExecuteCompressAsync();
+        CompressionResult compressionResult = await compressor.ExecuteCompressAsync();
+
+        dialog.PrimaryButtonText = this._resourceLoader.GetString("Finish");
+        dialog.CloseButtonText = string.Empty;
+        dialog.IsPrimaryButtonEnabled = true;
+        progressDialogViewModel.ProgressValue = 100;
+
+        if (!compressionResult.HasErrors)
+        {
+            progressDialogViewModel.CurrentFileBeingCompressed = this._resourceLoader.GetString("Success");
+        }
+        else
+        {
+            progressDialogViewModel.ShowError = true;
+            progressDialogViewModel.ErrorList = compressionResult.Errors;
+            progressDialogViewModel.CurrentFileBeingCompressed = this._resourceLoader.GetString("Failure");
+        }
 
         this.FilePath = "";
 
@@ -480,12 +533,25 @@ public partial class HomeViewModel : ObservableObject
 
             IStorageItem droppedItem = items[0];
 
-            this.FilePath = droppedItem switch
+            switch (droppedItem)
             {
-                StorageFile file => file.Path,
-                StorageFolder folder => folder.Path,
-                _ => this.FilePath
-            };
+                case StorageFile file when !file.Path.ToLower().EndsWith("pdf"):
+                    this.FilePath = "";
+                    break;
+                case StorageFile file:
+                    this.FilePath = file.Path;
+                    this.DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
+                    this.DeleteOriginalCardDescription = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
+                    break;
+                case StorageFolder folder:
+                    this.FilePath = folder.Path;
+                    this.DeleteOriginalCardHeader = this._resourceLoader.GetString("CreateNewFolder/Header");
+                    this.DeleteOriginalCardDescription = this._resourceLoader.GetString("CreateNewFolder/Description");
+                    break;
+                default:
+                    this.FilePath = "";
+                    break;
+            }
         }
         finally
         {

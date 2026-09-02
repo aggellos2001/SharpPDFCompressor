@@ -33,14 +33,16 @@ public abstract class Compressor
         this._availableStatusSlots = new ConcurrentQueue<int>(Enumerable.Range(0, this.NumOfThreads));
     }
 
-    protected abstract IEnumerable<string> Files { get; init; }
+    protected IEnumerable<string> Files { get; set; }
+    protected int PdfFilesCount { get; set; }
 
 
     // public variables required to be set.
+    public bool DeleteOriginalFiles { get; init; }
     public required CancellationToken Ct { get; init; }
     public required IProgress<(double? progressValue, int? workerID, string? message)>? ProgressHandler { get; init; }
 
-    public required string FilePath { get; init; }
+    public required string InputFilesPath { get; init; }
     public string CompressionLevel { get; init; } = "ebook";
     public int NumOfThreads { get; init; } = 4;
 
@@ -51,18 +53,20 @@ public abstract class Compressor
         {
             return result;
         }
-
         result = await this.CompressAsync();
         if (result.HasErrors || this.Ct.IsCancellationRequested)
         {
             return result;
         }
 
-        result = await this.PostCompressAsync();
+        result = await this.PostCompressionAsync();
         return result;
     }
 
     protected abstract Task<CompressionResult> PreCompressAsync();
+    protected abstract CompressionResult PostFileCompress(string originalFilePath, string compressedFilePath);
+
+    protected abstract Task<CompressionResult> PostCompressionAsync();
 
     private async Task<CompressionResult> CompressAsync()
     {
@@ -157,6 +161,7 @@ public abstract class Compressor
                         }
                     };
                     gsProcessor.Process([.. arguments]);
+                    this.PostFileCompress(file, compressedFileName);
                 }
                 catch (Exception exception)
                 {
@@ -167,7 +172,7 @@ public abstract class Compressor
                     this._availableStatusSlots.Enqueue(slotIndex);
 
                     this.ProgressHandler?.Report((
-                        1.0 / this.Files.Count() * 100,
+                        1.0 / this.PdfFilesCount * 100,
                         slotIndex,
                         "Done..."));
                 }
@@ -177,5 +182,4 @@ public abstract class Compressor
         return new CompressionResult { Errors = [.. threadErrors] };
     }
 
-    protected abstract Task<CompressionResult> PostCompressAsync();
 }
