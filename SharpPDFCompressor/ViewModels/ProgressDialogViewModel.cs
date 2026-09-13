@@ -13,7 +13,7 @@ public partial class ProgressDialogViewModel : ObservableObject
     [ObservableProperty] public partial string? CurrentFileBeingCompressed { get; set; }
     [ObservableProperty] public partial List<string>? ErrorList { get; set; }
 
-    
+
     [ObservableProperty] public partial bool ShowError { get; set; }
     [ObservableProperty] public partial string? SelectedListError { get; set; }
     [ObservableProperty] public partial bool TipShown { get; set; }

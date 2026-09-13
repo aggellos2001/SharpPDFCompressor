@@ -5,7 +5,7 @@
         xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
         xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
         xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
-        IgnorableNamespaces="uap rescap systemai uap18">
+        IgnorableNamespaces="uap rescap">
 
     <Identity
             Name="47880TsiantakisApps.SharpPDFCompressor"

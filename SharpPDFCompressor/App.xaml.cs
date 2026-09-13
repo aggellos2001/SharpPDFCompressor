@@ -10,6 +10,7 @@ public partial class App : Application
     {
 #if DEBUG
         // ApplicationLanguages.PrimaryLanguageOverride = "en-US";
+        // ApplicationLanguages.PrimaryLanguageOverride = "el-GR";
 #endif
         this.InitializeComponent();
     }

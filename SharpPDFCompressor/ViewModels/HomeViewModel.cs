@@ -4,6 +4,8 @@ using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.Windows.ApplicationModel.Resources;
+using SharpCompress.Archives;
+using SharpCompress.Common;
 using SharpPDFCompressor.Ui;
 using System;
 using System.Collections.Generic;
@@ -20,11 +22,16 @@ namespace SharpPDFCompressor.ViewModels;
 
 public partial class HomeViewModel : ObservableObject
 {
-
     private const string CompressedSuffix = "_compressed";
     private static readonly string DllPath = Path.Combine(AppContext.BaseDirectory, "Runtimes", "gsdll64.dll");
     private readonly ResourceLoader _resourceLoader = new();
     private CancellationTokenSource? _cts;
+
+    public HomeViewModel()
+    {
+        DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
+        DeleteOriginalCardDescription = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CompressionButtonEnabled))]
@@ -41,12 +48,6 @@ public partial class HomeViewModel : ObservableObject
     [ObservableProperty] public partial string DeleteOriginalCardHeader { get; set; }
 
     [ObservableProperty] public partial string DeleteOriginalCardDescription { get; set; }
-
-    public HomeViewModel()
-    {
-        DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
-        DeleteOriginalCardDescription = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
-    }
 
     [RelayCommand]
     private async Task SelectFile(string? folderPicker)
@@ -96,8 +97,6 @@ public partial class HomeViewModel : ObservableObject
             DeleteOriginalCardHeader = this._resourceLoader.GetString("CreateNewFolder/Header");
             DeleteOriginalCardDescription = this._resourceLoader.GetString("CreateNewFolder/Description");
         }
-
-
     }
 
     [RelayCommand]
@@ -163,6 +162,14 @@ public partial class HomeViewModel : ObservableObject
         {
             if (report.progressValue is { } progressValue)
             {
+                // if (double.IsInfinity(progressValue))
+                // {
+                //
+                // }
+                // else
+                // {
+                //     progressDialogViewModel.ProgressValue += progressValue;
+                // }
                 progressDialogViewModel.ProgressValue += progressValue;
             }
 
@@ -172,11 +179,26 @@ public partial class HomeViewModel : ObservableObject
             }
         });
 
-        Compressor compressor;
+        Compressor? compressor = null;
 
-        if (Directory.Exists(this.FilePath))
+        if (!Directory.Exists(this.FilePath) && ArchiveFactory.IsArchive(this.FilePath, out ArchiveType? isArchiveType))
         {
-            compressor = new DirectoryCompressor()
+            if (isArchiveType is not null)
+            {
+                compressor = new ArchiveCompressor
+                {
+                    InputFilesPath = this.FilePath,
+                    CompressionLevel = this.CompressionLevel,
+                    NumOfThreads = int.Parse(this.ParallelismLevel),
+                    ProgressHandler = progressHandler,
+                    DeleteOriginalFiles = this.DeleteOriginalFiles,
+                    Ct = this._cts.Token
+                };
+            }
+        }
+        else if (Directory.Exists(this.FilePath))
+        {
+            compressor = new DirectoryCompressor
             {
                 InputFilesPath = this.FilePath,
                 CompressionLevel = this.CompressionLevel,
@@ -188,7 +210,7 @@ public partial class HomeViewModel : ObservableObject
         }
         else
         {
-            compressor = new FileCompressor()
+            compressor = new FileCompressor
             {
                 InputFilesPath = this.FilePath,
                 CompressionLevel = this.CompressionLevel,
@@ -197,6 +219,11 @@ public partial class HomeViewModel : ObservableObject
                 DeleteOriginalFiles = this.DeleteOriginalFiles,
                 Ct = this._cts.Token
             };
+        }
+
+        if (compressor is null)
+        {
+            return;
         }
 
 
@@ -541,7 +568,8 @@ public partial class HomeViewModel : ObservableObject
                 case StorageFile file:
                     this.FilePath = file.Path;
                     this.DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
-                    this.DeleteOriginalCardDescription = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
+                    this.DeleteOriginalCardDescription =
+                        this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
                     break;
                 case StorageFolder folder:
                     this.FilePath = folder.Path;

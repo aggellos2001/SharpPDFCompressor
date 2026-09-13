@@ -191,7 +191,7 @@ You can also compress all the .pdf files inside an archive file (.zip, tar.gz, e
     <value>Delete original pdf files</value>
   </data>
   <data name="DeleteOriginalFilesSwitch.Description" xml:space="preserve">
-    <value>When enabled, all compressed PDF files are deleted. This option does not apply when compressing PDF files inside a compressed archive because each time a new copy is generated.</value>
+    <value>When enabled, this deletes the original PDF file(s).</value>
   </data>
   <data name="GenericError" xml:space="preserve">
     <value>An unexpected error occurred. If this persist, please report it to the developer!</value>
@@ -234,9 +234,9 @@ I welcome and encourage contributions to the code of this application. You can r
     <value>The file name path exceeds the maximum size of 250 characters. Please make the folder and file names shorter and try again.</value>
   </data>
   <data name="CreateNewFolder.Description" xml:space="preserve">
-    <value>When this feature is enabled, all compressed PDF files will be saved in a new folder located alongside the folder you selected for compression.</value>
+    <value>When this feature is enabled, all compressed PDF files are saved in a newly created folder alongside the original folder you selected for compression; otherwise, the compressed files are saved in the same folder.</value>
   </data>
   <data name="CreateNewFolder.Header" xml:space="preserve">
-    <value>Create a new directory</value>
+    <value>Compress in a new directory</value>
   </data>
 </root>

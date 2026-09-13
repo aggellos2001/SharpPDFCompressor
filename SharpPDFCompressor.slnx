@@ -1,11 +1,11 @@
 <Solution>
     <Configurations>
-        <Platform Name="ARM64"/>
-        <Platform Name="x64"/>
+        <Platform Name="ARM64" />
+        <Platform Name="x64" />
     </Configurations>
     <Project Path="SharpPDFCompressor/SharpPDFCompressor.csproj">
-        <Platform Solution="*|ARM64" Project="ARM64"/>
-        <Platform Solution="*|x64" Project="x64"/>
-        <Deploy/>
+        <Platform Solution="*|ARM64" Project="ARM64" />
+        <Platform Solution="*|x64" Project="x64" />
+        <Deploy />
     </Project>
 </Solution>

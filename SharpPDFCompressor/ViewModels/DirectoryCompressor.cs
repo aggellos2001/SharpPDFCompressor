@@ -1,7 +1,6 @@
 ﻿using SharpPDFCompressor.Utils;
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -14,11 +13,12 @@ public class DirectoryCompressor : Compressor
 
     protected override async Task<CompressionResult> PreCompressAsync()
     {
-        var result = new CompressionResult();
+        CompressionResult result = new();
 
         if (this.DeleteOriginalFiles)
         {
-            IEnumerable<string> files = Directory.EnumerateFiles(this.InputFilesPath, "*.*", SearchOption.AllDirectories);
+            IEnumerable<string> files =
+                Directory.EnumerateFiles(this.InputFilesPath, "*.*", SearchOption.AllDirectories);
 
             string sourceRoot = this.InputFilesPath;
             AppUtils.GetTempDir(out string tempDir);
@@ -42,15 +42,13 @@ public class DirectoryCompressor : Compressor
                 }
 
                 File.Copy(file, targetFilePath, false);
-                Debug.WriteLine($"File copied to {targetFilePath}!");
             });
 
-
-            this.Files = Directory.EnumerateFiles(targetRoot, "*.*", SearchOption.AllDirectories);
+            this.Files = [.. Directory.EnumerateFiles(targetRoot, "*.*", SearchOption.AllDirectories)];
         }
         else
         {
-            this.Files = Directory.EnumerateFiles(this.InputFilesPath, "*.*", SearchOption.AllDirectories);
+            this.Files = [.. Directory.EnumerateFiles(this.InputFilesPath, "*.*", SearchOption.AllDirectories)];
         }
 
         this.PdfFilesCount = this.Files.Count(file => file.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase));
@@ -74,17 +72,24 @@ public class DirectoryCompressor : Compressor
 
     protected override async Task<CompressionResult> PostCompressionAsync()
     {
-        CompressionResult result = new CompressionResult();
+        CompressionResult result = new();
 
         if (!this.DeleteOriginalFiles || this._tempFolderLocation == null)
         {
             return result;
         }
 
-        IEnumerable<string> files = Directory.EnumerateFiles(this._tempFolderLocation, "*.*", SearchOption.AllDirectories);
+        IEnumerable<string> files =
+            Directory.EnumerateFiles(this._tempFolderLocation, "*.*", SearchOption.AllDirectories);
 
+        int counter = 1;
         string targetRootDirectory = this.InputFilesPath
             .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + "_compressed";
+        while (Directory.Exists(targetRootDirectory))
+        {
+            targetRootDirectory = this.InputFilesPath
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + $"_compressed ({counter++})";
+        }
 
         Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 4 }, file =>
         {
@@ -96,6 +101,7 @@ public class DirectoryCompressor : Compressor
             {
                 Directory.CreateDirectory(targetDir);
             }
+
             File.Copy(file, targetFile, false);
         });
 

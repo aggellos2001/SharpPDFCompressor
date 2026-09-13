@@ -6,7 +6,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -20,21 +19,15 @@ public class CompressionResult
 
 public abstract class Compressor
 {
-    private const string CompressedSuffix = "_compressed";
 
     //private variables set by the compressor only
     private static readonly string DllPath = Path.Combine(AppContext.BaseDirectory, "Runtimes", "gsdll64.dll");
-    private readonly ConcurrentQueue<int> _availableStatusSlots;
-    private readonly ResourceLoader _resourceLoader = new();
+    protected readonly ResourceLoader ResourceLoader = new();
+    private BlockingCollection<int>? _availableStatusSlots;
 
-
-    protected Compressor()
-    {
-        this._availableStatusSlots = new ConcurrentQueue<int>(Enumerable.Range(0, this.NumOfThreads));
-    }
-
-    protected IEnumerable<string> Files { get; set; }
+    protected IEnumerable<string> Files { get; set; } = [];
     protected int PdfFilesCount { get; set; }
+    protected const string CompressedSuffix = "_compressed";
 
 
     // public variables required to be set.
@@ -46,13 +39,18 @@ public abstract class Compressor
     public string CompressionLevel { get; init; } = "ebook";
     public int NumOfThreads { get; init; } = 4;
 
+    private readonly Object _gsInitLock = new();
+
+
     public async Task<CompressionResult> ExecuteCompressAsync()
     {
+
         CompressionResult result = await this.PreCompressAsync();
         if (result.HasErrors || this.Ct.IsCancellationRequested)
         {
             return result;
         }
+
         result = await this.CompressAsync();
         if (result.HasErrors || this.Ct.IsCancellationRequested)
         {
@@ -70,25 +68,33 @@ public abstract class Compressor
 
     private async Task<CompressionResult> CompressAsync()
     {
+
         ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = this.NumOfThreads };
         ConcurrentBag<string> threadErrors = [];
 
         await Task.Run(() =>
         {
-            Parallel.ForEach(this.Files, parallelOptions, file =>
+            this._availableStatusSlots = new BlockingCollection<int>(new ConcurrentQueue<int>());
+            for (int i = 0; i < Math.Max(1, this.NumOfThreads); i++)
+            {
+                this._availableStatusSlots.Add(i, this.Ct);
+            }
+
+            Parallel.ForEach([.. this.Files], parallelOptions, file =>
             {
                 if (this.Ct.IsCancellationRequested)
                 {
                     return;
                 }
 
-                this._availableStatusSlots.TryDequeue(out int slotIndex);
+                int slotIndex = this._availableStatusSlots.Take(this.Ct);
+
                 try
                 {
                     string? directoryName = Path.GetDirectoryName(file);
                     if (directoryName == null)
                     {
-                        threadErrors.Add(this._resourceLoader.GetString("GenericError"));
+                        threadErrors.Add(this.ResourceLoader.GetString("GenericError"));
                         return;
                     }
 
@@ -101,7 +107,6 @@ public abstract class Compressor
                     string safeFileName = AppUtils.GetSafeFileName(file, CompressedSuffix);
                     string compressedFileName = Path.Combine(directoryName, $"{safeFileName}");
                     int counter = 1;
-
                     // Keep appending a counter until we find a filename that doesn't exist yet
                     string safeFileNameWithoutExtension = Path.GetFileNameWithoutExtension(safeFileName);
                     while (File.Exists(compressedFileName))
@@ -112,13 +117,14 @@ public abstract class Compressor
                     }
 
                     this.ProgressHandler?.Report((
-                        null, slotIndex, $"{this._resourceLoader.GetString("Compressing")} {file}"));
+                        null, slotIndex, $"{this.ResourceLoader.GetString("Compressing")} {file}"));
 
                     GCMemoryInfo memInfo = GC.GetGCMemoryInfo();
                     long freeMemoryBytes = memInfo.TotalAvailableMemoryBytes - memInfo.MemoryLoadBytes;
                     long bufferSpace = Math.Min((long)(freeMemoryBytes * 0.15), 1_000_000_000);
                     bufferSpace = Math.Max(bufferSpace, 50_000_000);
                     long bandBufferSpace = bufferSpace / 2;
+
 
                     List<string> arguments =
                     [
@@ -129,8 +135,8 @@ public abstract class Compressor
                         "-dNOPAUSE",
                         "-sDEVICE=pdfwrite",
                         $"-dPDFSETTINGS=/{this.CompressionLevel}",
-                        $"-dBufferSpace={bufferSpace}",
-                        $"-dBandBufferSpace={bandBufferSpace}",
+                        // $"-dBufferSpace={bufferSpace}",
+                        // $"-dBandBufferSpace={bandBufferSpace}",
                         $"-sOutputFile={compressedFileName}",
                         "-f",
                         file
@@ -141,26 +147,37 @@ public abstract class Compressor
                         string.Empty,
                         GhostscriptLicense.GPL
                     );
-                    using GhostscriptProcessor gsProcessor = new(gsVersion);
-                    gsProcessor.Processing += (sender, _) =>
-                    {
-                        try
-                        {
-                            if (this.Ct is not { IsCancellationRequested: true })
-                            {
-                                return;
-                            }
+                    GhostscriptProcessor gsProcessor;
 
-                            if (sender is GhostscriptProcessor processor)
-                            {
-                                processor.StopProcessing();
-                            }
-                        }
-                        catch (ObjectDisposedException)
+                    lock (this._gsInitLock)
+                    {
+                        gsProcessor = new GhostscriptProcessor();
+                        gsProcessor.Processing += (sender, _) =>
                         {
-                        }
-                    };
-                    gsProcessor.Process([.. arguments]);
+                            try
+                            {
+                                if (this.Ct is not { IsCancellationRequested: true })
+                                {
+                                    return;
+                                }
+
+                                if (sender is GhostscriptProcessor processor)
+                                {
+                                    processor.StopProcessing();
+                                }
+                            }
+                            catch (ObjectDisposedException e)
+                            {
+                                threadErrors.Add(e.Message);
+                            }
+                        };
+                    }
+
+                    using (gsProcessor)
+                    {
+                        gsProcessor.Process([.. arguments]);
+                    }
+
                     this.PostFileCompress(file, compressedFileName);
                 }
                 catch (Exception exception)
@@ -169,17 +186,23 @@ public abstract class Compressor
                 }
                 finally
                 {
-                    this._availableStatusSlots.Enqueue(slotIndex);
 
                     this.ProgressHandler?.Report((
                         1.0 / this.PdfFilesCount * 100,
                         slotIndex,
                         "Done..."));
+                    try
+                    {
+                        this._availableStatusSlots.Add(slotIndex, this.Ct);
+                    }
+                    catch (OperationCanceledException e)
+                    {
+                        threadErrors.Add(e.Message);
+                    }
                 }
             });
         }, this.Ct);
 
         return new CompressionResult { Errors = [.. threadErrors] };
     }
-
 }
