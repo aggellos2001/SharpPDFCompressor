@@ -49,6 +49,8 @@ public partial class HomeViewModel : ObservableObject
 
     [ObservableProperty] public partial string DeleteOriginalCardDescription { get; set; }
 
+    [ObservableProperty] public partial bool EnabledDeleteOriginalFilesButton { get; set; } = true;
+
     [RelayCommand]
     private async Task SelectFile(string? folderPicker)
     {
@@ -78,7 +80,18 @@ public partial class HomeViewModel : ObservableObject
             InitializeWithWindow.Initialize(openPicker, hWnd);
             StorageFile? file = await openPicker.PickSingleFileAsync();
 
+
             this.FilePath = file?.Path ?? string.Empty;
+
+            bool isArchive = false;
+            if (!Directory.Exists(this.FilePath))
+            {
+                ArchiveFactory.IsArchive(this.FilePath, out ArchiveType? archiveType);
+                if (archiveType is not null) isArchive = true;
+            }
+
+            this.EnabledDeleteOriginalFilesButton = !isArchive;
+
             DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
             DeleteOriginalCardDescription = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
         }
@@ -98,6 +111,64 @@ public partial class HomeViewModel : ObservableObject
             DeleteOriginalCardDescription = this._resourceLoader.GetString("CreateNewFolder/Description");
         }
     }
+
+    public void OnDragOver(object _, DragEventArgs e)
+    {
+        e.AcceptedOperation = DataPackageOperation.Copy;
+        e.DragUIOverride.Caption = "Drop your file here";
+        e.DragUIOverride.IsCaptionVisible = true;
+    }
+
+    public async Task OnDrop(object _, DragEventArgs e)
+    {
+        if (!e.DataView.Contains(StandardDataFormats.StorageItems))
+        {
+            return;
+        }
+
+        DragOperationDeferral? deferral = e.GetDeferral();
+        try
+        {
+            IReadOnlyList<IStorageItem>? items = await e.DataView.GetStorageItemsAsync();
+            if (items.Count == 0)
+            {
+                return;
+            }
+
+            IStorageItem droppedItem = items[0];
+
+            bool isArchive = false;
+            if (!Directory.Exists(droppedItem.Path))
+            {
+                ArchiveFactory.IsArchive(droppedItem.Path, out ArchiveType? archiveType);
+                if (archiveType is not null) isArchive = true;
+            }
+
+            switch (droppedItem)
+            {
+                case StorageFolder folder:
+                    this.FilePath = folder.Path;
+                    this.DeleteOriginalCardHeader = this._resourceLoader.GetString("CreateNewFolder/Header");
+                    this.DeleteOriginalCardDescription = this._resourceLoader.GetString("CreateNewFolder/Description");
+                    break;
+                case StorageFile file when file.Path.ToLower().EndsWith("pdf") || isArchive:
+                    this.FilePath = file.Path;
+                    this.DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
+                    this.DeleteOriginalCardDescription =
+                        this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
+                    this.EnabledDeleteOriginalFilesButton = !isArchive;
+                    break;
+                default:
+                    this.FilePath = "";
+                    break;
+            }
+        }
+        finally
+        {
+            deferral.Complete();
+        }
+    }
+
 
     [RelayCommand]
     private async Task Compress(XamlRoot xamlRoot)
@@ -162,14 +233,6 @@ public partial class HomeViewModel : ObservableObject
         {
             if (report.progressValue is { } progressValue)
             {
-                // if (double.IsInfinity(progressValue))
-                // {
-                //
-                // }
-                // else
-                // {
-                //     progressDialogViewModel.ProgressValue += progressValue;
-                // }
                 progressDialogViewModel.ProgressValue += progressValue;
             }
 
@@ -248,342 +311,5 @@ public partial class HomeViewModel : ObservableObject
         }
 
         this.FilePath = "";
-
-        // string inputPath = this.FilePath;
-        // string quality = this.CompressionLevel;
-        // ConcurrentBag<string> threadErrors = [];
-        // List<string> errors = [];
-        // IEnumerable<string> files = [];
-        //
-        // string originalInputPath = string.Empty;
-        // bool isArchive = false;
-        //
-        // if (!Directory.Exists(inputPath) && File.Exists(inputPath) &&
-        //     ArchiveFactory.IsArchive(inputPath, out ArchiveType? isArchiveType))
-        // {
-        //     if (isArchiveType != null)
-        //     {
-        //         string? parentDir = Path.GetDirectoryName(inputPath);
-        //         if (parentDir == null)
-        //         {
-        //             errors.Add(this._resourceLoader.GetString("GenericError"));
-        //         }
-        //
-        //         // first we extract the archive in the temp folder
-        //         AppUtils.GetTempDir(out string tempDir);
-        //         string zipExtractionDir = Path.Combine(tempDir, Path.GetRandomFileName());
-        //         if (!Directory.Exists(zipExtractionDir))
-        //         {
-        //             Directory.CreateDirectory(zipExtractionDir);
-        //         }
-        //
-        //         try
-        //         {
-        //             await Task.Run(() =>
-        //             {
-        //                 using IArchive archive = ArchiveFactory.OpenArchive(inputPath);
-        //                 ExtractionOptions options = new()
-        //                 {
-        //                     ExtractFullPath = true, PreserveFileTime = true, Overwrite = true
-        //                 };
-        //                 foreach (IArchiveEntry entry in archive.Entries.Where(e => !e.IsDirectory))
-        //                 {
-        //                     this._cts.Token.ThrowIfCancellationRequested();
-        //                     entry.WriteToDirectory(zipExtractionDir, options);
-        //                 }
-        //             }, this._cts.Token);
-        //         }
-        //         catch (OperationCanceledException)
-        //         {
-        //             dialog.Hide();
-        //             return;
-        //         }
-        //         catch (Exception e)
-        //         {
-        //             errors.Add("Error occured " + e.StackTrace);
-        //         }
-        //
-        //         // keep the original input path here for cleanup
-        //         isArchive = true;
-        //         originalInputPath = inputPath;
-        //         inputPath = zipExtractionDir;
-        //     }
-        // }
-        //
-        // int pdfFilesCount = 0;
-        // if (Directory.Exists(inputPath))
-        // {
-        //     // Loop through all PDFs in the folder
-        //     files = Directory.EnumerateFiles(inputPath, "*.*", SearchOption.AllDirectories).ToArray();
-        //     pdfFilesCount = files.Count(file => file.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase));
-        // }
-        // else if (File.Exists(inputPath) && Path.GetExtension(inputPath).ToLower().EndsWith("pdf"))
-        // {
-        //     files = [inputPath];
-        //     pdfFilesCount = 1;
-        // }
-        // else
-        // {
-        //     errors.Add(this._resourceLoader.GetString("InvalidFileException"));
-        // }
-        //
-        // progressDialogViewModel.CurrentFileBeingCompressed = $"{this._resourceLoader.GetString("CompressingStatus")}";
-        //
-        //
-        // if (errors.Count == 0)
-        // {
-        //     ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = maxWorkers };
-        //
-        //     await Task.Run(() =>
-        //     {
-        //         Parallel.ForEach(files, parallelOptions, file =>
-        //         {
-        //             if (this._cts.Token.IsCancellationRequested)
-        //             {
-        //                 return;
-        //             }
-        //
-        //             availableStatusSlots.TryDequeue(out int slotIndex);
-        //
-        //             try
-        //             {
-        //                 string? directoryName = Path.GetDirectoryName(file);
-        //                 if (directoryName == null)
-        //                 {
-        //                     threadErrors.Add(this._resourceLoader.GetString("GenericError"));
-        //                     return;
-        //                 }
-        //
-        //                 string extension = Path.GetExtension(file);
-        //                 if (!extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
-        //                 {
-        //                     return;
-        //                 }
-        //
-        //                 string safeFileName = AppUtils.GetSafeFileName(file, CompressedSuffix);
-        //                 string compressedFileName = Path.Combine(directoryName, $"{safeFileName}");
-        //                 int counter = 1;
-        //
-        //                 // Keep appending a counter until we find a filename that doesn't exist yet
-        //                 string safeFileNameWithoutExtension = Path.GetFileNameWithoutExtension(safeFileName);
-        //                 while (File.Exists(compressedFileName))
-        //                 {
-        //                     compressedFileName = Path.Combine(directoryName,
-        //                         $"{safeFileNameWithoutExtension} ({counter}){extension}");
-        //                     counter++;
-        //                 }
-        //
-        //                 App.MainWindow?.DispatcherQueue.TryEnqueue(() =>
-        //                 {
-        //                     progressDialogViewModel.WorkerFileStatuses[slotIndex] =
-        //                         $"{this._resourceLoader.GetString("Compressing")} {file}";
-        //                 });
-        //
-        //                 GCMemoryInfo memInfo = GC.GetGCMemoryInfo();
-        //                 long freeMemoryBytes = memInfo.TotalAvailableMemoryBytes - memInfo.MemoryLoadBytes;
-        //                 long bufferSpace = Math.Min((long)(freeMemoryBytes * 0.15), 1_000_000_000);
-        //                 bufferSpace = Math.Max(bufferSpace, 50_000_000);
-        //                 long bandBufferSpace = bufferSpace / 2;
-        //
-        //                 List<string> arguments =
-        //                 [
-        //                     "-empty",
-        //                     "-dQUIET",
-        //                     "-dSAFER",
-        //                     "-dBATCH",
-        //                     "-dNOPAUSE",
-        //                     "-sDEVICE=pdfwrite",
-        //                     $"-dPDFSETTINGS=/{quality}",
-        //                     $"-dBufferSpace={bufferSpace}",
-        //                     $"-dBandBufferSpace={bandBufferSpace}",
-        //                     $"-sOutputFile={compressedFileName}",
-        //                     "-f",
-        //                     file
-        //                 ];
-        //                 GhostscriptVersionInfo gsVersion = new(
-        //                     new Version(10, 07, 1),
-        //                     DllPath,
-        //                     string.Empty,
-        //                     GhostscriptLicense.GPL
-        //                 );
-        //                 using GhostscriptProcessor gsProcessor = new(gsVersion);
-        //                 gsProcessor.Processing += (sender, _) =>
-        //                 {
-        //                     try
-        //                     {
-        //                         if (this._cts is not { IsCancellationRequested: true })
-        //                         {
-        //                             return;
-        //                         }
-        //
-        //                         if (sender is GhostscriptProcessor processor)
-        //                         {
-        //                             processor.StopProcessing();
-        //                         }
-        //                     }
-        //                     catch (ObjectDisposedException)
-        //                     {
-        //                     }
-        //                 };
-        //                 gsProcessor.Process([.. arguments]);
-        //
-        //                 if (!isArchive && !this.DeleteOriginalFiles)
-        //                 {
-        //                     return;
-        //                 }
-        //
-        //                 //if an archive or a folder with remove original files is given
-        //                 //then we remove the original file and rename the old from the
-        //                 //resulting archive or folder
-        //                 File.Delete(file);
-        //                 File.Move(compressedFileName, file);
-        //             }
-        //             catch (Exception exception)
-        //             {
-        //                 threadErrors.Add(exception.Message);
-        //             }
-        //             finally
-        //             {
-        //                 availableStatusSlots.Enqueue(slotIndex);
-        //
-        //                 App.MainWindow?.DispatcherQueue.TryEnqueue(() =>
-        //                 {
-        //                     progressDialogViewModel.WorkerFileStatuses[slotIndex] = "Done...";
-        //                     progressDialogViewModel.ProgressValue += 1.0 / pdfFilesCount * 100;
-        //                 });
-        //             }
-        //         });
-        //     }, this._cts.Token);
-        // }
-        //
-        // // If cancellation is request return immediately the method and close the dialog.
-        // // This code is reached after the try-catch is completed
-        // if (this._cts is { IsCancellationRequested: true } && errors.Count == 0)
-        // {
-        //     dialog.Hide();
-        //     this.FilePath = "";
-        //     return;
-        // }
-        //
-        // progressDialogViewModel.ProgressValue = 100;
-        // errors.AddRange(threadErrors);
-        //
-        // if (isArchive && errors.Count == 0)
-        // {
-        //     try
-        //     {
-        //         string? resultDir = Path.GetDirectoryName(originalInputPath);
-        //         if (resultDir == null)
-        //         {
-        //             errors.Add(this._resourceLoader.GetString("GenericError"));
-        //             return;
-        //         }
-        //
-        //         string originalArchiveName = Path.GetFileNameWithoutExtension(originalInputPath);
-        //         string destName = Path.Combine(resultDir, $"{originalArchiveName}${CompressedSuffix}.zip");
-        //         int counter = 1;
-        //         while (File.Exists(destName))
-        //         {
-        //             destName = Path.Combine(resultDir, $"{originalArchiveName}${CompressedSuffix}({counter}).zip");
-        //             counter++;
-        //         }
-        //
-        //         /*write a new archive with the files from the temp folder to the original
-        //         location where the archive existed
-        //          */
-        //         await using FileStream stream = File.Create(destName);
-        //         await using IAsyncWriter writer = await WriterFactory
-        //             .OpenAsyncWriter(stream, ArchiveType.Zip,
-        //                 new WriterOptions(CompressionType.Deflate)
-        //                 {
-        //                     ArchiveEncoding = new ArchiveEncoding { Forced = Encoding.UTF8 }
-        //                 }, this._cts.Token);
-        //
-        //         await writer.WriteAllAsync(inputPath, "*", SearchOption.AllDirectories, this._cts.Token);
-        //     }
-        //     catch (Exception e)
-        //     {
-        //         errors.Add(e.Message);
-        //     }
-        //     finally
-        //     {
-        //         //finally cleanup the temp directory
-        //         if (Directory.Exists(inputPath))
-        //         {
-        //             Directory.Delete(inputPath, true);
-        //         }
-        //     }
-        // }
-        //
-        //
-        // dialog.PrimaryButtonText = this._resourceLoader.GetString("Finish");
-        // dialog.CloseButtonText = string.Empty;
-        // dialog.IsPrimaryButtonEnabled = true;
-        // progressDialogViewModel.ProgressValue = 100;
-        //
-        // if (errors.Count == 0)
-        // {
-        //     progressDialogViewModel.CurrentFileBeingCompressed = this._resourceLoader.GetString("Success");
-        // }
-        // else
-        // {
-        //     progressDialogViewModel.ShowError = true;
-        //     progressDialogViewModel.ErrorList = errors;
-        //     progressDialogViewModel.CurrentFileBeingCompressed = this._resourceLoader.GetString("Failure");
-        // }
-        //
-        // this.FilePath = "";
-    }
-
-    public void OnDragOver(object _, DragEventArgs e)
-    {
-        e.AcceptedOperation = DataPackageOperation.Copy;
-        e.DragUIOverride.Caption = "Drop your file here";
-        e.DragUIOverride.IsCaptionVisible = true;
-    }
-
-    public async Task OnDrop(object _, DragEventArgs e)
-    {
-        if (!e.DataView.Contains(StandardDataFormats.StorageItems))
-        {
-            return;
-        }
-
-        DragOperationDeferral? deferral = e.GetDeferral();
-        try
-        {
-            IReadOnlyList<IStorageItem>? items = await e.DataView.GetStorageItemsAsync();
-            if (items.Count == 0)
-            {
-                return;
-            }
-
-            IStorageItem droppedItem = items[0];
-
-            switch (droppedItem)
-            {
-                case StorageFile file when !file.Path.ToLower().EndsWith("pdf"):
-                    this.FilePath = "";
-                    break;
-                case StorageFile file:
-                    this.FilePath = file.Path;
-                    this.DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
-                    this.DeleteOriginalCardDescription =
-                        this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
-                    break;
-                case StorageFolder folder:
-                    this.FilePath = folder.Path;
-                    this.DeleteOriginalCardHeader = this._resourceLoader.GetString("CreateNewFolder/Header");
-                    this.DeleteOriginalCardDescription = this._resourceLoader.GetString("CreateNewFolder/Description");
-                    break;
-                default:
-                    this.FilePath = "";
-                    break;
-            }
-        }
-        finally
-        {
-            deferral.Complete();
-        }
     }
 }

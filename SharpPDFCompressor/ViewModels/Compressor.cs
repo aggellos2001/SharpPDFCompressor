@@ -19,7 +19,6 @@ public class CompressionResult
 
 public abstract class Compressor
 {
-
     //private variables set by the compressor only
     private static readonly string DllPath = Path.Combine(AppContext.BaseDirectory, "Runtimes", "gsdll64.dll");
     protected readonly ResourceLoader ResourceLoader = new();
@@ -44,7 +43,6 @@ public abstract class Compressor
 
     public async Task<CompressionResult> ExecuteCompressAsync()
     {
-
         CompressionResult result = await this.PreCompressAsync();
         if (result.HasErrors || this.Ct.IsCancellationRequested)
         {
@@ -68,7 +66,6 @@ public abstract class Compressor
 
     private async Task<CompressionResult> CompressAsync()
     {
-
         ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = this.NumOfThreads };
         ConcurrentBag<string> threadErrors = [];
 
@@ -186,7 +183,6 @@ public abstract class Compressor
                 }
                 finally
                 {
-
                     this.ProgressHandler?.Report((
                         1.0 / this.PdfFilesCount * 100,
                         slotIndex,

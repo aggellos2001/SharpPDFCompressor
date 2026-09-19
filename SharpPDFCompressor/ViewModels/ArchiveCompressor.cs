@@ -26,6 +26,7 @@ public class ArchiveCompressor : Compressor
 
         // first we extract the archive in the temp folder
         // AppUtils.GetTempDir(out string tempDir);
+        //todo re-enable this after testing!
 
         string zipExtractionDir = Path.Combine(parentDir, Path.GetRandomFileName());
 

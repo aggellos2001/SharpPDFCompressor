@@ -99,7 +99,9 @@
                 <controls:SettingsCard Header="{x:Bind ViewModel.DeleteOriginalCardHeader,Mode=OneWay}"
                                        Description="{x:Bind ViewModel.DeleteOriginalCardDescription,Mode=OneWay}"
                                        HeaderIcon="{ui:FontIcon Glyph=&#xE107;}"
-                                       HorizontalAlignment="Stretch">
+                                       HorizontalAlignment="Stretch"
+                                       IsEnabled="{x:Bind ViewModel.EnabledDeleteOriginalFilesButton,Mode=OneWay}"
+                                       >
                     <ToggleSwitch IsOn="{x:Bind ViewModel.DeleteOriginalFiles, Mode=TwoWay}" />
                 </controls:SettingsCard>
             </StackPanel>
