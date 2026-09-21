@@ -36,7 +36,9 @@ public partial class SettingsViewModel : ObservableObject
         if (File.Exists(filePath))
         {
             string jsonText = await File.ReadAllTextAsync(filePath);
-            List<PackageLicense>? licenses = JsonSerializer.Deserialize<List<PackageLicense>>(jsonText);
+            List<PackageLicense>? licenses = JsonSerializer.Deserialize(
+                jsonText,
+                SettingsJsonContext.Default.ListPackageLicense);
             this.Licenses = new ObservableCollection<PackageLicense>(licenses ?? []);
         }
     }

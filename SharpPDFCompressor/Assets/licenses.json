@@ -23,16 +23,12 @@
   },
   {
     "PackageId": "Ghostscript.NET",
-    "PackageVersion": "1.3.3",
+    "PackageVersion": "1.3.6",
     "PackageProjectUrl": "https://github.com/ArtifexSoftware/Ghostscript.NET",
     "Copyright": "Artifex Software Inc.",
     "Authors": "Artifex Software Inc.",
     "Description": "A C# binding for Ghostscript library",
     "ValidationErrors": [
-      {
-        "Error": "Unable to determine license from the given license file",
-        "Context": "C:\\Users\\aggel\\DotNetProjects\\SharpPDFCompressor\\SharpPDFCompressor\\SharpPDFCompressor.csproj"
-      },
       {
         "Error": "Unable to determine license from the given license file",
         "Context": "C:\\Users\\aggel\\DotNetProjects\\SharpPDFCompressor\\SharpPDFCompressor\\SharpPDFCompressor.csproj"
@@ -47,8 +43,30 @@
     "LicenseInformationOrigin": 5
   },
   {
+    "PackageId": "Microsoft.DotNet.ILCompiler",
+    "PackageVersion": "10.0.12",
+    "PackageProjectUrl": "https://dot.net/",
+    "Copyright": "\u00A9 Microsoft Corporation. All rights reserved.",
+    "Authors": "Microsoft",
+    "Description": "Provides a native AOT compiler and runtime for .NET",
+    "License": "MIT",
+    "LicenseUrl": "https://licenses.nuget.org/MIT",
+    "LicenseInformationOrigin": 0
+  },
+  {
+    "PackageId": "Microsoft.NET.ILLink.Tasks",
+    "PackageVersion": "10.0.12",
+    "PackageProjectUrl": "https://dot.net/",
+    "Copyright": "\u00A9 Microsoft Corporation. All rights reserved.",
+    "Authors": "Microsoft",
+    "Description": "MSBuild tasks for running the IL Linker",
+    "License": "MIT",
+    "LicenseUrl": "https://licenses.nuget.org/MIT",
+    "LicenseInformationOrigin": 0
+  },
+  {
     "PackageId": "Microsoft.Windows.SDK.BuildTools",
-    "PackageVersion": "10.0.28000.2270",
+    "PackageVersion": "10.0.28000.2705",
     "PackageProjectUrl": "https://aka.ms/WinSDKProjectURL",
     "Copyright": "\u00A9 Microsoft Corporation. All rights reserved.",
     "Authors": "Microsoft",
@@ -60,16 +78,12 @@
   },
   {
     "PackageId": "Microsoft.WindowsAppSDK",
-    "PackageVersion": "2.2.0",
+    "PackageVersion": "2.5.1",
     "PackageProjectUrl": "https://github.com/microsoft/windowsappsdk",
     "Copyright": "\u00A9 Microsoft Corporation. All rights reserved.",
     "Authors": "Microsoft",
     "Description": "The Windows App SDK empowers all Windows Desktop apps with modern Windows UI, APIs, and platform features, including back-compat support.",
     "ValidationErrors": [
-      {
-        "Error": "Unable to determine license from the given license file",
-        "Context": "C:\\Users\\aggel\\DotNetProjects\\SharpPDFCompressor\\SharpPDFCompressor\\SharpPDFCompressor.csproj"
-      },
       {
         "Error": "Unable to determine license from the given license file",
         "Context": "C:\\Users\\aggel\\DotNetProjects\\SharpPDFCompressor\\SharpPDFCompressor\\SharpPDFCompressor.csproj"
@@ -85,7 +99,7 @@
   },
   {
     "PackageId": "SharpCompress",
-    "PackageVersion": "0.50.0",
+    "PackageVersion": "0.50.4",
     "PackageProjectUrl": "https://github.com/adamhathcock/sharpcompress",
     "Copyright": "Copyright (c) 2025  Adam Hathcock",
     "Authors": "Adam Hathcock",
@@ -96,7 +110,7 @@
   },
   {
     "PackageId": "WinUIEx",
-    "PackageVersion": "2.9.2",
+    "PackageVersion": "2.9.3",
     "PackageProjectUrl": "https://dotmorten.github.io/WinUIEx",
     "Copyright": "Copyright \u00A9 2021-2026 - Morten Nielsen",
     "Authors": "Morten Nielsen - https://xaml.dev",

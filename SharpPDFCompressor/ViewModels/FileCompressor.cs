@@ -14,9 +14,9 @@ public sealed class FileCompressor : Compressor
     /// </exception>
     protected override async Task<CompressionResult> PreCompressAsync()
     {
+        CompressionResult result = new();
         if (!File.Exists(this.InputFilesPath) || !Path.GetExtension(this.InputFilesPath).ToLower().EndsWith("pdf"))
         {
-            CompressionResult result = new();
             result.Errors.Add("File not found!");
             return result;
         }
@@ -24,7 +24,7 @@ public sealed class FileCompressor : Compressor
         this.Files = [this.InputFilesPath];
         this.PdfFilesCount = 1;
 
-        return new CompressionResult();
+        return result;
     }
 
     protected override CompressionResult PostFileCompress(string originalFilePath, string compressedFilePath)

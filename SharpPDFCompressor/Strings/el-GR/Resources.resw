@@ -139,8 +139,7 @@
     <value>Επιλέξτε ένα φάκελο</value>
   </data>
   <data name="HomeSubTitle.Text" xml:space="preserve">
-    <value>Μπορείτε να συμπιέσετε ένα αρχείο .pdf ή όλα τα αρχεία που συμπεριλαμβάνονται σε ένα φάκελο και τους υποφακέλους.
-Μπορείτε επίσης να συμπιέσετε όλα τα .pdf αρχεία που βρίσκονται μέσα σε συμπιεσμένα αρχεία (.zip, .tar.gz κλπ)</value>
+    <value>Μπορείτε να συμπιέσετε ένα αρχείο PDF, όλα τα αρχεία PDF σε ένα φάκελο και τους υποφακέλους του ή όλα τα PDF αρχεία που βρίσκονται μέσα σε συμπιεσμένα αρχεία (.zip, .tar.gz κ.λ.π.)</value>
   </data>
   <data name="HighCompressionButton.Content" xml:space="preserve">
     <value>Υψηλή</value>

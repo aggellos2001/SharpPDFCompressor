@@ -1,36 +1,44 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-    <PropertyGroup>
-        <OutputType>WinExe</OutputType>
-        <TargetFramework>net8.0-windows10.0.19041.0</TargetFramework>
-        <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-        <RootNamespace>SharpPDFCompressor</RootNamespace>
-        <ApplicationManifest>app.manifest</ApplicationManifest>
-        <Platforms>x64;ARM64</Platforms>
-        <RuntimeIdentifiers>win-x64;win-arm64</RuntimeIdentifiers>
-        <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
-        <!-- <RuntimeIdentifier Condition="'$(Platform)' == 'x86'">win-x86</RuntimeIdentifier> -->
-        <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
-        <UseWinUI>true</UseWinUI>
-        <WinUISDKReferences>false</WinUISDKReferences>
-        <EnableMsixTooling>true</EnableMsixTooling>
-        <Nullable>enable</Nullable>
-        <WindowsPackageType>MSIX</WindowsPackageType>
-        <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-        <SelfContained>true</SelfContained>
-        <PublishSingleFile>false</PublishSingleFile>
-        <PublishTrimmed>false</PublishTrimmed>
-        <PublishReadyToRun>false</PublishReadyToRun>
-        <LangVersion>14</LangVersion>
-        <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
-        <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-        <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
-        <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-        <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-        <GenerateTestArtifacts>True</GenerateTestArtifacts>
-        <AppxBundle>Never</AppxBundle>
-        <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
-        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    </PropertyGroup>
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+
+    <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+    <RootNamespace>SharpPDFCompressor</RootNamespace>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+
+    <Platforms>x64;ARM64</Platforms>
+    
+    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+
+    <UseWinUI>true</UseWinUI>
+    <WinUISDKReferences>false</WinUISDKReferences>
+    <EnableMsixTooling>true</EnableMsixTooling>
+    <Nullable>enable</Nullable>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <LangVersion>14</LangVersion>
+
+    <WindowsPackageType>MSIX</WindowsPackageType>
+    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+    <SelfContained>true</SelfContained>
+    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
+    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
+    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+    <GenerateTestArtifacts>True</GenerateTestArtifacts>
+    <AppxBundle>Never</AppxBundle>
+    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+
+    <PublishAot>true</PublishAot>
+    <IsAotCompatible>true</IsAotCompatible>
+    <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
+    <TrimMode>partial</TrimMode>
+    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+
+    <NoWarn>$(NoWarn);IL3058</NoWarn>
+  </PropertyGroup>
 
     <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
         <PublishSingleFile>true</PublishSingleFile>
@@ -48,11 +56,11 @@
     <ItemGroup>
         <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
         <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
-        <PackageReference Include="Ghostscript.NET" Version="1.3.3" />
-        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2270" />
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.2.0" />
-        <PackageReference Include="SharpCompress" Version="0.50.0" />
-        <PackageReference Include="WinUIEx" Version="2.9.2" />
+        <PackageReference Include="Ghostscript.NET" Version="1.3.6" />
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
+        <PackageReference Include="SharpCompress" Version="0.50.4" />
+        <PackageReference Include="WinUIEx" Version="2.9.3" />
     </ItemGroup>
 
     <ItemGroup>

@@ -27,7 +27,7 @@
         <ScrollView Grid.Row="2" VerticalScrollBarVisibility="Visible">
             <ItemsControl ItemsSource="{x:Bind ViewModel.WorkerFileStatuses}" Margin="4,0,0,0">
                 <ItemsControl.ItemTemplate>
-                    <DataTemplate>
+                    <DataTemplate x:DataType="x:String">
                         <Grid Margin="0,4,0,4">
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="Auto" />
@@ -41,7 +41,7 @@
                                       VerticalAlignment="Center" />
 
                             <TextBlock Grid.Column="1"
-                                       Text="{Binding}"
+                                       Text="{x:Bind}"
                                        FontSize="12"
                                        Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                        TextWrapping="Wrap"
@@ -79,8 +79,8 @@
                       ItemsSource="{x:Bind ViewModel.ErrorList, Mode=OneWay}">
 
                 <ListView.ItemTemplate>
-                    <DataTemplate>
-                        <TextBlock Text="{Binding}"
+                    <DataTemplate x:DataType="x:String">
+                        <TextBlock Text="{x:Bind}"
                                    TextWrapping="Wrap"
                                    Margin="0,8"
                                    Foreground="{ThemeResource TextFillColorPrimaryBrush}" />

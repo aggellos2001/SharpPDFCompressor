@@ -139,8 +139,7 @@
     <value>Pick a folder</value>
   </data>
   <data name="HomeSubTitle.Text" xml:space="preserve">
-    <value>You can compress a single .pdf file or all the .pdf files inside a folder and its subfolders.
-You can also compress all the .pdf files inside an archive file (.zip, tar.gz, etc.)</value>
+    <value>You can compress a single PDF file, all PDF files within a folder and its subfolders, or all PDF files contained in an archive file (such as .zip or .tar.gz).</value>
   </data>
   <data name="HighCompressionButton.Content" xml:space="preserve">
     <value>High</value>
