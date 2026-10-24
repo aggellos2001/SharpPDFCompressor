@@ -6,8 +6,8 @@ public partial class ProgressDialog
 {
     public ProgressDialog(ProgressDialogViewModel viewModel)
     {
-        this.InitializeComponent();
         this.ViewModel = viewModel;
+        this.InitializeComponent();
     }
 
     public ProgressDialogViewModel ViewModel { get; }

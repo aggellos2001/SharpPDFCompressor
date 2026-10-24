@@ -23,7 +23,7 @@ public partial class SettingsViewModel : ObservableObject
             }
             catch (Exception)
             {
-                return "Unpackaged build";
+                return "Development build";
             }
         }
     }

@@ -62,17 +62,29 @@ public class PackageLicense
     }
 
     [JsonIgnore]
+    public string? VersionWithLicense
+    {
+        get
+        {
+            string version = string.IsNullOrWhiteSpace(this.PackageVersion) ? "" : this.PackageVersion;
+            string license = this.DisplayLicense;
+            return $"{version} - Licensed under: {license}";
+        }
+    }
+
+    [JsonIgnore]
     public string? ActionableUrl
     {
         get
         {
-            if (string.IsNullOrWhiteSpace(this.LicenseUrl) ||
-                this.LicenseUrl.Contains("deprecateLicenseUrl", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(this.PackageProjectUrl))
             {
                 return this.PackageProjectUrl;
             }
 
-            return this.LicenseUrl;
+            return string.IsNullOrWhiteSpace(this.PackageId)
+                ? null
+                : $"https://www.nuget.org/packages/{Uri.EscapeDataString(this.PackageId)}";
         }
     }
 }

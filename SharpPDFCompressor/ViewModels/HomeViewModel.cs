@@ -9,6 +9,7 @@ using SharpCompress.Common;
 using SharpPDFCompressor.Ui;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -22,15 +23,13 @@ namespace SharpPDFCompressor.ViewModels;
 
 public partial class HomeViewModel : ObservableObject
 {
-    private const string CompressedSuffix = "_compressed";
-    private static readonly string DllPath = Path.Combine(AppContext.BaseDirectory, "Runtimes", "gsdll64.dll");
     private readonly ResourceLoader _resourceLoader = new();
     private CancellationTokenSource? _cts;
 
     public HomeViewModel()
     {
-        DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
-        DeleteOriginalCardDescription = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
+        this.DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
+        this.DeleteOriginalCardDescription = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
     }
 
     [ObservableProperty]
@@ -39,11 +38,33 @@ public partial class HomeViewModel : ObservableObject
 
     public bool CompressionButtonEnabled => !string.IsNullOrWhiteSpace(this.FilePath) && Path.Exists(this.FilePath);
 
-    [ObservableProperty] public partial string CompressionLevel { get; set; } = "ebook";
+    [ObservableProperty] public partial string ParallelismLevel { get; set; } = GetNearestParallelismLevel(Environment.ProcessorCount).ToString();
 
-    [ObservableProperty] public partial string ParallelismLevel { get; set; } = "4";
+    private static int GetNearestParallelismLevel(int processorCount)
+    {
+        int[] levels = [1, 2, 4, 8, 16, 32];
+        int minDistance = int.MaxValue;
+        int nearest = levels[0];
+        foreach (int level in levels)
+        {
+            int distance = Math.Abs(level - processorCount);
+            if (distance < minDistance)
+            {
+                minDistance = distance;
+                nearest = level;
+            }
+        }
+
+        return nearest;
+    }
+
+    [ObservableProperty] public partial bool CompressImages { get; set; }
 
     [ObservableProperty] public partial bool DeleteOriginalFiles { get; set; }
+
+    [ObservableProperty] public partial string CompressedSuffix { get; set; } = Compressor.DefaultCompressedSuffix;
+
+    [ObservableProperty] public partial bool IgnoreCompressedFiles { get; set; } = true;
 
     [ObservableProperty] public partial string DeleteOriginalCardHeader { get; set; }
 
@@ -83,17 +104,28 @@ public partial class HomeViewModel : ObservableObject
 
             this.FilePath = file?.Path ?? string.Empty;
 
+            if (string.IsNullOrEmpty(this.FilePath))
+            {
+                return;
+            }
+
+            this.DeleteOriginalFiles = false;
+
             bool isArchive = false;
             if (!Directory.Exists(this.FilePath))
             {
                 ArchiveFactory.IsArchive(this.FilePath, out ArchiveType? archiveType);
-                if (archiveType is not null) isArchive = true;
+                if (archiveType is not null)
+                {
+                    isArchive = true;
+                }
             }
 
             this.EnabledDeleteOriginalFilesButton = !isArchive;
 
-            DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
-            DeleteOriginalCardDescription = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
+            this.DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
+            this.DeleteOriginalCardDescription =
+                this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
         }
         else
         {
@@ -107,8 +139,10 @@ public partial class HomeViewModel : ObservableObject
             StorageFolder? folder = await openPicker.PickSingleFolderAsync();
             this.FilePath = folder?.Path ?? string.Empty;
 
-            DeleteOriginalCardHeader = this._resourceLoader.GetString("CreateNewFolder/Header");
-            DeleteOriginalCardDescription = this._resourceLoader.GetString("CreateNewFolder/Description");
+            this.DeleteOriginalFiles = false;
+
+            this.DeleteOriginalCardHeader = this._resourceLoader.GetString("CreateNewFolder/Header");
+            this.DeleteOriginalCardDescription = this._resourceLoader.GetString("CreateNewFolder/Description");
         }
     }
 
@@ -141,18 +175,23 @@ public partial class HomeViewModel : ObservableObject
             if (!Directory.Exists(droppedItem.Path))
             {
                 ArchiveFactory.IsArchive(droppedItem.Path, out ArchiveType? archiveType);
-                if (archiveType is not null) isArchive = true;
+                if (archiveType is not null)
+                {
+                    isArchive = true;
+                }
             }
 
             switch (droppedItem)
             {
                 case StorageFolder folder:
                     this.FilePath = folder.Path;
+                    this.DeleteOriginalFiles = false;
                     this.DeleteOriginalCardHeader = this._resourceLoader.GetString("CreateNewFolder/Header");
                     this.DeleteOriginalCardDescription = this._resourceLoader.GetString("CreateNewFolder/Description");
                     break;
                 case StorageFile file when file.Path.ToLower().EndsWith("pdf") || isArchive:
                     this.FilePath = file.Path;
+                    this.DeleteOriginalFiles = false;
                     this.DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
                     this.DeleteOriginalCardDescription =
                         this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
@@ -180,10 +219,6 @@ public partial class HomeViewModel : ObservableObject
             this.FilePath = "";
         });
 
-
-        // int maxWorkers = int.Parse(this.ParallelismLevel);
-
-
         XamlUICommand buttonCancelCommand = new();
         buttonCancelCommand.ExecuteRequested += (_, _) =>
         {
@@ -200,7 +235,7 @@ public partial class HomeViewModel : ObservableObject
         };
 
         ProgressDialogViewModel progressDialogViewModel = new();
-        progressDialogViewModel.InitializeWorkers(int.Parse(this.ParallelismLevel));
+        progressDialogViewModel.InitializeWorkers();
         // ConcurrentQueue<int> availableStatusSlots = new(Enumerable.Range(0, maxWorkers));
 
         ProgressDialog dialog = new(progressDialogViewModel)
@@ -229,18 +264,33 @@ public partial class HomeViewModel : ObservableObject
             dialog.CloseButtonText = this._resourceLoader.GetString("PleaseWait");
         };
 
-        Progress<(double? progressValue, int? workerID, string? message)> progressHandler = new(report =>
-        {
-            if (report.progressValue is { } progressValue)
+        int highestCompletedFileCount = 0;
+        Progress<(double? progressValue, int? workerID, string? message, int? completedFiles, int? totalFiles)>
+            progressHandler = new(report =>
             {
-                progressDialogViewModel.ProgressValue += progressValue;
-            }
+                if (report.progressValue is { } progressValue)
+                {
+                    progressDialogViewModel.ProgressValue += progressValue;
+                }
 
-            if ((report.workerID, report.message) is ({ } workerId, { } message))
-            {
-                progressDialogViewModel.WorkerFileStatuses[workerId] = message;
-            }
-        });
+                if ((report.workerID, report.message) is ({ } workerId, { } message))
+                {
+                    progressDialogViewModel.UpdateWorkerStatus(workerId, message);
+                }
+
+                if (report.completedFiles is { } completedFiles && report.totalFiles is { } totalFiles &&
+                    totalFiles > 0)
+                {
+                    highestCompletedFileCount = Math.Max(highestCompletedFileCount, completedFiles);
+                    double percent = (double)highestCompletedFileCount / totalFiles * 100;
+                    progressDialogViewModel.ProgressSummary = string.Format(
+                        CultureInfo.CurrentCulture,
+                        this._resourceLoader.GetString("CompressionProgressCounter"),
+                        highestCompletedFileCount,
+                        totalFiles,
+                        percent);
+                }
+            });
 
         Compressor? compressor = null;
 
@@ -251,9 +301,11 @@ public partial class HomeViewModel : ObservableObject
                 compressor = new ArchiveCompressor
                 {
                     InputFilesPath = this.FilePath,
-                    CompressionLevel = this.CompressionLevel,
                     NumOfThreads = int.Parse(this.ParallelismLevel),
                     ProgressHandler = progressHandler,
+                    CompressImages = this.CompressImages,
+                    CompressedSuffix = this.CompressedSuffix,
+                    IgnoreCompressedFiles = this.IgnoreCompressedFiles,
                     DeleteOriginalFiles = this.DeleteOriginalFiles,
                     Ct = this._cts.Token
                 };
@@ -264,9 +316,11 @@ public partial class HomeViewModel : ObservableObject
             compressor = new DirectoryCompressor
             {
                 InputFilesPath = this.FilePath,
-                CompressionLevel = this.CompressionLevel,
                 NumOfThreads = int.Parse(this.ParallelismLevel),
                 ProgressHandler = progressHandler,
+                CompressImages = this.CompressImages,
+                CompressedSuffix = this.CompressedSuffix,
+                IgnoreCompressedFiles = this.IgnoreCompressedFiles,
                 DeleteOriginalFiles = this.DeleteOriginalFiles,
                 Ct = this._cts.Token
             };
@@ -276,9 +330,11 @@ public partial class HomeViewModel : ObservableObject
             compressor = new FileCompressor
             {
                 InputFilesPath = this.FilePath,
-                CompressionLevel = this.CompressionLevel,
                 NumOfThreads = int.Parse(this.ParallelismLevel),
                 ProgressHandler = progressHandler,
+                CompressImages = this.CompressImages,
+                CompressedSuffix = this.CompressedSuffix,
+                IgnoreCompressedFiles = this.IgnoreCompressedFiles,
                 DeleteOriginalFiles = this.DeleteOriginalFiles,
                 Ct = this._cts.Token
             };
@@ -293,6 +349,17 @@ public partial class HomeViewModel : ObservableObject
         dialog.ShowAsync();
 
         CompressionResult compressionResult = await compressor.ExecuteCompressAsync();
+
+        if (compressionResult.BeforeSizeBytes is { } beforeSize && compressionResult.AfterSizeBytes is { } afterSize)
+        {
+            long reduction = beforeSize - afterSize;
+            double reductionPercent = beforeSize == 0 ? 0 : (double)reduction / beforeSize * 100;
+            progressDialogViewModel.BeforeSize = FormatFileSize(beforeSize);
+            progressDialogViewModel.AfterSize = FormatFileSize(afterSize);
+            progressDialogViewModel.ReductionSize = FormatFileSize(Math.Abs(reduction));
+            progressDialogViewModel.ReductionPercent = Math.Round(reductionPercent, 1);
+            progressDialogViewModel.SizeSummaryVisible = true;
+        }
 
         dialog.PrimaryButtonText = this._resourceLoader.GetString("Finish");
         dialog.CloseButtonText = string.Empty;
@@ -311,5 +378,19 @@ public partial class HomeViewModel : ObservableObject
         }
 
         this.FilePath = "";
+    }
+
+    private static string FormatFileSize(long sizeBytes)
+    {
+        string[] units = ["B", "KB", "MB", "GB", "TB"];
+        double size = sizeBytes;
+        int unitIndex = 0;
+        while (Math.Abs(size) >= 1024 && unitIndex < units.Length - 1)
+        {
+            size /= 1024;
+            unitIndex++;
+        }
+
+        return string.Format(CultureInfo.CurrentCulture, "{0:0.##} {1}", size, units[unitIndex]);
     }
 }

@@ -5,6 +5,7 @@ namespace SharpPDFCompressor.ViewModels;
 
 public sealed class FileCompressor : Compressor
 {
+    private string? _compressedFilePath;
     /// <summary>
     ///     Creates a compressor class for single PDF files.
     /// </summary>
@@ -23,12 +24,14 @@ public sealed class FileCompressor : Compressor
 
         this.Files = [this.InputFilesPath];
         this.PdfFilesCount = 1;
+        this.BeforeSizeBytes = new FileInfo(this.InputFilesPath).Length;
 
         return result;
     }
 
     protected override CompressionResult PostFileCompress(string originalFilePath, string compressedFilePath)
     {
+        this._compressedFilePath = compressedFilePath;
         if (!this.DeleteOriginalFiles)
         {
             return new CompressionResult();
@@ -44,6 +47,12 @@ public sealed class FileCompressor : Compressor
 
     protected override async Task<CompressionResult> PostCompressionAsync()
     {
+        string? outputPath = this.DeleteOriginalFiles ? this.InputFilesPath : this._compressedFilePath;
+        if (outputPath is not null && File.Exists(outputPath))
+        {
+            this.AfterSizeBytes = new FileInfo(outputPath).Length;
+        }
+
         return new CompressionResult();
     }
 }

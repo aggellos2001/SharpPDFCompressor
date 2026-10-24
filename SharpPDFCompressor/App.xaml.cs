@@ -21,5 +21,6 @@ public partial class App : Application
     {
         this._window = new MainWindow();
         MainWindow = this._window;
+        this._window.Activate();
     }
 }

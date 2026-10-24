@@ -17,8 +17,8 @@ public class DirectoryCompressor : Compressor
 
         if (this.DeleteOriginalFiles)
         {
-            IEnumerable<string> files =
-                Directory.EnumerateFiles(this.InputFilesPath, "*.*", SearchOption.AllDirectories);
+            string[] files = [.. Directory.EnumerateFiles(this.InputFilesPath, "*.*", SearchOption.AllDirectories)];
+            this.BeforeSizeBytes = GetFilesSize(files);
 
             string sourceRoot = this.InputFilesPath;
             AppUtils.GetTempDir(out string tempDir);
@@ -31,27 +31,36 @@ public class DirectoryCompressor : Compressor
                 Directory.CreateDirectory(targetRoot);
             }
 
-            Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 4 }, file =>
+            // Copy files asynchronously to avoid blocking the UI
+            await Task.Run(() =>
             {
-                string relativePath = Path.GetRelativePath(sourceRoot, file);
-                string targetFilePath = Path.Combine(targetRoot, relativePath);
-                string? targetDirectory = Path.GetDirectoryName(targetFilePath);
-                if (!string.IsNullOrWhiteSpace(targetDirectory))
+                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 4 }, file =>
                 {
-                    Directory.CreateDirectory(targetDirectory);
-                }
+                    string relativePath = Path.GetRelativePath(sourceRoot, file);
+                    string targetFilePath = Path.Combine(targetRoot, relativePath);
+                    string? targetDirectory = Path.GetDirectoryName(targetFilePath);
+                    if (!string.IsNullOrWhiteSpace(targetDirectory))
+                    {
+                        Directory.CreateDirectory(targetDirectory);
+                    }
 
-                File.Copy(file, targetFilePath, false);
-            });
+                    File.Copy(file, targetFilePath, false);
+                });
+            }, this.Ct);
 
-            this.Files = [.. Directory.EnumerateFiles(targetRoot, "*.*", SearchOption.AllDirectories)];
+            this.Files = [.. Directory.EnumerateFiles(targetRoot, "*.*", SearchOption.AllDirectories)
+                .Where(file => IsPdf(file) && (!this.IgnoreCompressedFiles ||
+                    !Path.GetFileNameWithoutExtension(file).Contains(this.CompressedSuffix, StringComparison.OrdinalIgnoreCase)))];
         }
         else
         {
-            this.Files = [.. Directory.EnumerateFiles(this.InputFilesPath, "*.*", SearchOption.AllDirectories)];
+            string[] files = [.. Directory.EnumerateFiles(this.InputFilesPath, "*.*", SearchOption.AllDirectories)];
+            this.BeforeSizeBytes = GetFilesSize(files);
+            this.Files = [.. files.Where(file => IsPdf(file) && (!this.IgnoreCompressedFiles ||
+                !Path.GetFileNameWithoutExtension(file).Contains(this.CompressedSuffix, StringComparison.OrdinalIgnoreCase)))];
         }
 
-        this.PdfFilesCount = this.Files.Count(file => file.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase));
+        this.PdfFilesCount = this.Files.Count();
 
         return result;
     }
@@ -76,34 +85,52 @@ public class DirectoryCompressor : Compressor
 
         if (!this.DeleteOriginalFiles || this._tempFolderLocation == null)
         {
+            this.AfterSizeBytes = GetDirectorySize(this.InputFilesPath);
             return result;
         }
 
-        IEnumerable<string> files =
-            Directory.EnumerateFiles(this._tempFolderLocation, "*.*", SearchOption.AllDirectories);
-
-        int counter = 1;
-        string targetRootDirectory = this.InputFilesPath
-            .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + "_compressed";
-        while (Directory.Exists(targetRootDirectory))
+        try
         {
-            targetRootDirectory = this.InputFilesPath
-                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + $"_compressed ({counter++})";
-        }
+            IEnumerable<string> files =
+                Directory.EnumerateFiles(this._tempFolderLocation, "*.*", SearchOption.AllDirectories);
 
-        Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 4 }, file =>
-        {
-            string relativePath = Path.GetRelativePath(this._tempFolderLocation, file);
-            string targetFile = Path.Combine(targetRootDirectory, relativePath);
-
-            string? targetDir = Path.GetDirectoryName(targetFile);
-            if (!string.IsNullOrWhiteSpace(targetDir))
+            int counter = 1;
+            string targetRootDirectory = this.InputFilesPath
+                .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + "_compressed";
+            while (Directory.Exists(targetRootDirectory))
             {
-                Directory.CreateDirectory(targetDir);
+                targetRootDirectory = this.InputFilesPath
+                    .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + $"_compressed ({counter++})";
             }
 
-            File.Copy(file, targetFile, false);
-        });
+            // Copy files asynchronously to avoid blocking the UI
+            await Task.Run(() =>
+            {
+                Parallel.ForEach(files, new ParallelOptions { MaxDegreeOfParallelism = 4 }, file =>
+                {
+                    string relativePath = Path.GetRelativePath(this._tempFolderLocation, file);
+                    string targetFile = Path.Combine(targetRootDirectory, relativePath);
+
+                    string? targetDir = Path.GetDirectoryName(targetFile);
+                    if (!string.IsNullOrWhiteSpace(targetDir))
+                    {
+                        Directory.CreateDirectory(targetDir);
+                    }
+
+                    File.Copy(file, targetFile, false);
+                });
+            }, this.Ct);
+
+            this.AfterSizeBytes = GetDirectorySize(targetRootDirectory);
+        }
+        finally
+        {
+            // cleanup the temp directory
+            if (Directory.Exists(this._tempFolderLocation))
+            {
+                Directory.Delete(this._tempFolderLocation, true);
+            }
+        }
 
         return result;
     }

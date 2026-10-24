@@ -1,6 +1,5 @@
-using Ghostscript.NET;
-using Ghostscript.NET.Processor;
 using Microsoft.Windows.ApplicationModel.Resources;
+using MuPDF.NET;
 using SharpPDFCompressor.Utils;
 using System;
 using System.Collections.Concurrent;
@@ -15,30 +14,34 @@ public class CompressionResult
 {
     public List<string> Errors { get; init; } = [];
     public bool HasErrors => this.Errors.Count > 0;
+    public long? BeforeSizeBytes { get; set; }
+    public long? AfterSizeBytes { get; set; }
 }
 
 public abstract class Compressor
 {
+    public const string DefaultCompressedSuffix = "_compressed";
+
     //private variables set by the compressor only
-    private static readonly string DllPath = Path.Combine(AppContext.BaseDirectory, "Runtimes", "gsdll64.dll");
     protected readonly ResourceLoader ResourceLoader = new();
     private BlockingCollection<int>? _availableStatusSlots;
 
     protected IEnumerable<string> Files { get; set; } = [];
     protected int PdfFilesCount { get; set; }
-    protected const string CompressedSuffix = "_compressed";
+    protected long? BeforeSizeBytes { get; set; }
+    protected long? AfterSizeBytes { get; set; }
 
 
     // public variables required to be set.
     public bool DeleteOriginalFiles { get; init; }
+    public bool CompressImages { get; init; }
+    public required string CompressedSuffix { get; init; }
+    public bool IgnoreCompressedFiles { get; init; }
     public required CancellationToken Ct { get; init; }
-    public required IProgress<(double? progressValue, int? workerID, string? message)>? ProgressHandler { get; init; }
+    public required IProgress<(double? progressValue, int? workerID, string? message, int? completedFiles, int? totalFiles)>? ProgressHandler { get; init; }
 
     public required string InputFilesPath { get; init; }
-    public string CompressionLevel { get; init; } = "ebook";
     public int NumOfThreads { get; init; } = 4;
-
-    private readonly Object _gsInitLock = new();
 
 
     public async Task<CompressionResult> ExecuteCompressAsync()
@@ -46,16 +49,23 @@ public abstract class Compressor
         CompressionResult result = await this.PreCompressAsync();
         if (result.HasErrors || this.Ct.IsCancellationRequested)
         {
-            return result;
+            return this.AddSizeSummary(result);
         }
 
         result = await this.CompressAsync();
         if (result.HasErrors || this.Ct.IsCancellationRequested)
         {
-            return result;
+            return this.AddSizeSummary(result);
         }
 
         result = await this.PostCompressionAsync();
+        return this.AddSizeSummary(result);
+    }
+
+    private CompressionResult AddSizeSummary(CompressionResult result)
+    {
+        result.BeforeSizeBytes = this.BeforeSizeBytes;
+        result.AfterSizeBytes = this.AfterSizeBytes;
         return result;
     }
 
@@ -64,13 +74,31 @@ public abstract class Compressor
 
     protected abstract Task<CompressionResult> PostCompressionAsync();
 
+    protected static bool IsPdf(string file) => Path.GetExtension(file).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
+
+    protected static long GetFilesSize(IEnumerable<string> files)
+    {
+        long totalSize = 0;
+        foreach (string file in files)
+        {
+            totalSize += new System.IO.FileInfo(file).Length;
+        }
+
+        return totalSize;
+    }
+
+    protected static long GetDirectorySize(string directoryPath) =>
+        GetFilesSize(Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.AllDirectories));
+
     private async Task<CompressionResult> CompressAsync()
     {
         ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = this.NumOfThreads };
         ConcurrentBag<string> threadErrors = [];
+        int completedFiles = 0;
 
         await Task.Run(() =>
         {
+            this.ProgressHandler?.Report((null, null, null, 0, this.PdfFilesCount));
             this._availableStatusSlots = new BlockingCollection<int>(new ConcurrentQueue<int>());
             for (int i = 0; i < Math.Max(1, this.NumOfThreads); i++)
             {
@@ -96,12 +124,8 @@ public abstract class Compressor
                     }
 
                     string extension = Path.GetExtension(file);
-                    if (!extension.Equals(".pdf", StringComparison.OrdinalIgnoreCase))
-                    {
-                        return;
-                    }
 
-                    string safeFileName = AppUtils.GetSafeFileName(file, CompressedSuffix);
+                    string safeFileName = AppUtils.GetSafeFileName(file, this.CompressedSuffix);
                     string compressedFileName = Path.Combine(directoryName, $"{safeFileName}");
                     int counter = 1;
                     // Keep appending a counter until we find a filename that doesn't exist yet
@@ -114,67 +138,38 @@ public abstract class Compressor
                     }
 
                     this.ProgressHandler?.Report((
-                        null, slotIndex, $"{this.ResourceLoader.GetString("Compressing")} {file}"));
+                        null, slotIndex, $"{this.ResourceLoader.GetString("Compressing")} {file}", null, null));
 
-                    GCMemoryInfo memInfo = GC.GetGCMemoryInfo();
-                    long freeMemoryBytes = memInfo.TotalAvailableMemoryBytes - memInfo.MemoryLoadBytes;
-                    long bufferSpace = Math.Min((long)(freeMemoryBytes * 0.15), 1_000_000_000);
-                    bufferSpace = Math.Max(bufferSpace, 50_000_000);
-                    long bandBufferSpace = bufferSpace / 2;
-
-
-                    List<string> arguments =
-                    [
-                        "-empty",
-                        "-dQUIET",
-                        "-dSAFER",
-                        "-dBATCH",
-                        "-dNOPAUSE",
-                        "-sDEVICE=pdfwrite",
-                        $"-dPDFSETTINGS=/{this.CompressionLevel}",
-                        // $"-dBufferSpace={bufferSpace}",
-                        // $"-dBandBufferSpace={bandBufferSpace}",
-                        $"-sOutputFile={compressedFileName}",
-                        "-f",
-                        file
-                    ];
-                    GhostscriptVersionInfo gsVersion = new(
-                        new Version(10, 07, 1),
-                        DllPath,
-                        string.Empty,
-                        GhostscriptLicense.GPL
-                    );
-                    GhostscriptProcessor gsProcessor;
-
-                    lock (this._gsInitLock)
+                    this.Ct.ThrowIfCancellationRequested();
+                    Document document = new(file);
+                    try
                     {
-                        gsProcessor = new GhostscriptProcessor();
-                        gsProcessor.Processing += (sender, _) =>
+                        if (this.CompressImages)
                         {
-                            try
-                            {
-                                if (this.Ct is not { IsCancellationRequested: true })
-                                {
-                                    return;
-                                }
+                            // Recompress images to reduce file size:
+                            // - Resample images with DPI > 300 down to 150 DPI
+                            // - Use JPEG quality 75 for lossy compression
+                            // - Include all image types (lossy, lossless, bitonal, color, gray)
+                            document.RewriteImages(
+                                dpiThreshold: 300,
+                                dpiTarget: 150,
+                                quality: 75,
+                                lossy: true,
+                                lossless: true,
+                                bitonal: true,
+                                color: true,
+                                gray: true
+                            );
+                        }
 
-                                if (sender is GhostscriptProcessor processor)
-                                {
-                                    processor.StopProcessing();
-                                }
-                            }
-                            catch (ObjectDisposedException e)
-                            {
-                                threadErrors.Add(e.Message);
-                            }
-                        };
+                        document.Save(compressedFileName, 4, deflate: 1, useObjstms: 1);
                     }
-
-                    using (gsProcessor)
+                    finally
                     {
-                        gsProcessor.Process([.. arguments]);
+                        document.Close();
                     }
 
+                    this.Ct.ThrowIfCancellationRequested();
                     this.PostFileCompress(file, compressedFileName);
                 }
                 catch (Exception exception)
@@ -183,10 +178,13 @@ public abstract class Compressor
                 }
                 finally
                 {
+                    int completedFileCount = Interlocked.Increment(ref completedFiles);
                     this.ProgressHandler?.Report((
                         1.0 / this.PdfFilesCount * 100,
                         slotIndex,
-                        "Done..."));
+                        "Done...",
+                        completedFileCount,
+                        this.PdfFilesCount));
                     try
                     {
                         this._availableStatusSlots.Add(slotIndex, this.Ct);

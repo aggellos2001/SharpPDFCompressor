@@ -1,44 +1,44 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>WinExe</OutputType>
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
 
-    <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
-    <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
-    <RootNamespace>SharpPDFCompressor</RootNamespace>
-    <ApplicationManifest>app.manifest</ApplicationManifest>
+        <TargetFramework>net10.0-windows10.0.22621.0</TargetFramework>
+        <TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
+        <RootNamespace>SharpPDFCompressor</RootNamespace>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
 
-    <Platforms>x64;ARM64</Platforms>
-    
-    <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
-    <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
+        <Platforms>x64;ARM64</Platforms>
 
-    <UseWinUI>true</UseWinUI>
-    <WinUISDKReferences>false</WinUISDKReferences>
-    <EnableMsixTooling>true</EnableMsixTooling>
-    <Nullable>enable</Nullable>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <LangVersion>14</LangVersion>
+        <RuntimeIdentifier Condition="'$(Platform)' == 'x64'">win-x64</RuntimeIdentifier>
+        <RuntimeIdentifier Condition="'$(Platform)' == 'ARM64'">win-arm64</RuntimeIdentifier>
 
-    <WindowsPackageType>MSIX</WindowsPackageType>
-    <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
-    <SelfContained>true</SelfContained>
-    <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
-    <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
-    <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
-    <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
-    <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
-    <GenerateTestArtifacts>True</GenerateTestArtifacts>
-    <AppxBundle>Never</AppxBundle>
-    <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
+        <UseWinUI>true</UseWinUI>
+        <WinUISDKReferences>false</WinUISDKReferences>
+        <EnableMsixTooling>true</EnableMsixTooling>
+        <Nullable>enable</Nullable>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <LangVersion>14</LangVersion>
 
-    <PublishAot>true</PublishAot>
-    <IsAotCompatible>true</IsAotCompatible>
-    <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
-    <TrimMode>partial</TrimMode>
-    <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+        <WindowsPackageType>MSIX</WindowsPackageType>
+        <WindowsAppSDKSelfContained>true</WindowsAppSDKSelfContained>
+        <SelfContained>true</SelfContained>
+        <GenerateTemporaryStoreCertificate>True</GenerateTemporaryStoreCertificate>
+        <GenerateAppInstallerFile>False</GenerateAppInstallerFile>
+        <AppxPackageSigningEnabled>False</AppxPackageSigningEnabled>
+        <AppxPackageSigningTimestampDigestAlgorithm>SHA256</AppxPackageSigningTimestampDigestAlgorithm>
+        <AppxAutoIncrementPackageRevision>True</AppxAutoIncrementPackageRevision>
+        <GenerateTestArtifacts>True</GenerateTestArtifacts>
+        <AppxBundle>Never</AppxBundle>
+        <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
 
-    <NoWarn>$(NoWarn);IL3058</NoWarn>
-  </PropertyGroup>
+        <PublishAot>true</PublishAot>
+        <IsAotCompatible>true</IsAotCompatible>
+        <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
+        <TrimMode>partial</TrimMode>
+        <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
+
+        <NoWarn>$(NoWarn);IL3058;NU1605;MSB3277;CS0618</NoWarn>
+    </PropertyGroup>
 
     <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
         <PublishSingleFile>true</PublishSingleFile>
@@ -46,28 +46,28 @@
 
 
     <ItemGroup>
-        <Manifest Include="$(ApplicationManifest)" />
+        <Manifest Include="$(ApplicationManifest)"/>
     </ItemGroup>
 
     <ItemGroup Condition="'$(DisableMsixProjectCapabilityAddedByProject)'!='true' and '$(EnableMsixTooling)'=='true'">
-        <ProjectCapability Include="Msix" />
+        <ProjectCapability Include="Msix"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-        <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219" />
-        <PackageReference Include="Ghostscript.NET" Version="1.3.6" />
-        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705" />
-        <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1" />
-        <PackageReference Include="SharpCompress" Version="0.50.4" />
-        <PackageReference Include="WinUIEx" Version="2.9.3" />
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2"/>
+        <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219"/>
+        <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705"/>
+        <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1"/>
+        <PackageReference Include="WinUIEx" Version="2.9.3"/>
+        <PackageReference Include="SharpCompress" Version="0.50.7"/>
+        <PackageReference Include="MuPDF.NET" Version="3.28.2.4"/>
     </ItemGroup>
 
     <ItemGroup>
         <Page Update="Home.xaml">
             <Generator>MSBuild:Compile</Generator>
         </Page>
-        <Page Remove="obj\**" />
+        <Page Remove="obj\**"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -90,24 +90,17 @@
     </ItemGroup>
 
     <ItemGroup>
-        <EditorConfigFiles Remove="C:\Users\aggel\DotNetProjects\SharpPDFCompressor\SharpPDFCompressor\.editorconfig" />
+        <EditorConfigFiles Remove="C:\Users\aggel\DotNetProjects\SharpPDFCompressor\SharpPDFCompressor\.editorconfig"/>
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="licenses.json" />
-        <None Remove="Runtimes\gsdll64.dll" />
-        <None Remove="obj\**" />
+        <None Remove="licenses.json"/>
+        <None Remove="obj\**"/>
     </ItemGroup>
 
     <ItemGroup>
-        <Content Include="Runtimes\gsdll64.dll">
-            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        </Content>
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="C:\Users\aggel\DotNetProjects\SharpPDFCompressor\SharpPDFCompressor\.editorconfig" />
-        <None Include="ViewModels\DirectoryCompressor.cs" />
+        <None Include="C:\Users\aggel\DotNetProjects\SharpPDFCompressor\SharpPDFCompressor\.editorconfig"/>
+        <None Include="ViewModels\DirectoryCompressor.cs"/>
     </ItemGroup>
 
     <ItemGroup>
@@ -294,11 +287,11 @@
     </ItemGroup>
 
     <Target Name="GenerateLicenses" BeforeTargets="PreBuildEvent">
-        <Message Importance="High" Text="Updating licenses.json..." />
+        <Message Importance="High" Text="Updating licenses.json..."/>
 
-        <MakeDir Directories="$(MSBuildProjectDirectory)\Assets" />
+        <MakeDir Directories="$(MSBuildProjectDirectory)\Assets"/>
 
-        <Exec Command="nuget-license -i &quot;$(MSBuildProjectFullPath)&quot; -o JsonPretty -fo &quot;$(MSBuildProjectDirectory)\Assets\licenses.json&quot;" IgnoreExitCode="true" />
+        <Exec Command="nuget-license -i &quot;$(MSBuildProjectFullPath)&quot; -o JsonPretty -fo &quot;$(MSBuildProjectDirectory)\Assets\licenses.json&quot;" IgnoreExitCode="true"/>
     </Target>
 
 </Project>

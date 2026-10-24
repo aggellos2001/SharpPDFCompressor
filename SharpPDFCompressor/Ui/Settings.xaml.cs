@@ -1,5 +1,8 @@
+using CommunityToolkit.WinUI.Controls;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Navigation;
+using SharpPDFCompressor.DataModels;
 using SharpPDFCompressor.ViewModels;
 using System;
 using Windows.System;
@@ -8,6 +11,8 @@ namespace SharpPDFCompressor.Ui;
 
 public sealed partial class Settings : Page
 {
+    private bool _isThemeSelectorInitialized;
+    private bool _isUpdatingThemeSelector;
     public Settings()
     {
         this.InitializeComponent();
@@ -15,6 +20,43 @@ public sealed partial class Settings : Page
     }
 
     public SettingsViewModel ViewModel { get; } = new();
+
+    protected override void OnNavigatedTo(NavigationEventArgs e)
+    {
+        base.OnNavigatedTo(e);
+
+        if (App.MainWindow is MainWindow mainWindow)
+        {
+            this.UpdateThemeSelection(mainWindow.CurrentTheme);
+        }
+
+        this._isThemeSelectorInitialized = true;
+    }
+
+    internal void UpdateThemeSelection(MainWindow.AppTheme theme)
+    {
+        this._isUpdatingThemeSelector = true;
+        this.ThemeComboBox.SelectedIndex = (int)theme;
+        this._isUpdatingThemeSelector = false;
+    }
+
+    private void ThemeSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!this._isThemeSelectorInitialized || this._isUpdatingThemeSelector ||
+            this.ThemeComboBox.SelectedIndex is < 0 or > 2)
+        {
+            return;
+        }
+
+        if (App.MainWindow is MainWindow mainWindow)
+        {
+            MainWindow.AppTheme selectedTheme = (MainWindow.AppTheme)this.ThemeComboBox.SelectedIndex;
+            if (mainWindow.CurrentTheme != selectedTheme)
+            {
+                mainWindow.ApplyTheme(selectedTheme);
+            }
+        }
+    }
 
     private async void Settings_Loaded(object sender, RoutedEventArgs e)
     {
@@ -32,5 +74,15 @@ public sealed partial class Settings : Page
     {
         Uri uri = new("https://www.linkedin.com/in/apostolos-paschalis-96a8b8420");
         await Launcher.LaunchUriAsync(uri);
+    }
+
+    private async void LicenseCard_Click(object sender, RoutedEventArgs e)
+    {
+        if (sender is SettingsCard card && card.Tag is PackageLicense license &&
+            !string.IsNullOrWhiteSpace(license.ActionableUrl))
+        {
+            Uri uri = new(license.ActionableUrl);
+            await Launcher.LaunchUriAsync(uri);
+        }
     }
 }

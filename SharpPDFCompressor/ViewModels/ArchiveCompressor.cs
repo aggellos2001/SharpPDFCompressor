@@ -1,5 +1,5 @@
-﻿using SharpCompress.Archives;
-using SharpCompress.Common;
+﻿using SharpCompress.Common;
+using SharpCompress.Readers;
 using SharpCompress.Writers;
 using System;
 using System.Collections.Generic;
@@ -14,19 +14,46 @@ public class ArchiveCompressor : Compressor
 {
     private string? _tempFolderLocation;
 
+    /// <summary>
+    /// Filters files for archive inclusion: for PDFs, only keeps the compressed version
+    /// (containing the compressed suffix) if it exists; non-PDF files are always included.
+    /// </summary>
+    private IEnumerable<string> FilterFilesForArchive(string directoryPath)
+    {
+        List<string> allFiles = Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.AllDirectories)
+            .ToList();
+        List<string> result = new();
+
+        foreach (string file in allFiles)
+        {
+            if (IsPdf(file))
+            {
+                if (!this.IgnoreCompressedFiles ||
+                    Path.GetFileNameWithoutExtension(file)
+                        .Contains(this.CompressedSuffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    result.Add(file);
+                }
+            }
+            else
+            {
+                result.Add(file);
+            }
+        }
+
+        return result;
+    }
+
     protected override async Task<CompressionResult> PreCompressAsync()
     {
         CompressionResult result = new();
+        this.BeforeSizeBytes = new FileInfo(this.InputFilesPath).Length;
         string? parentDir = Path.GetDirectoryName(this.InputFilesPath);
         if (parentDir is null)
         {
             result.Errors.Add(this.ResourceLoader.GetString("GenericError"));
             return result;
         }
-
-        // first we extract the archive in the temp folder
-        // AppUtils.GetTempDir(out string tempDir);
-        //todo re-enable this after testing!
 
         string zipExtractionDir = Path.Combine(parentDir, Path.GetRandomFileName());
 
@@ -37,45 +64,77 @@ public class ArchiveCompressor : Compressor
 
         try
         {
-            await Task.Run(() =>
+            await using var reader = await ReaderFactory.OpenAsyncReader(this.InputFilesPath, null, this.Ct);
+            
+            while (await reader.MoveToNextEntryAsync(this.Ct))
             {
-                using IArchive archive = ArchiveFactory.OpenArchive(this.InputFilesPath);
-                ExtractionOptions options = new()
+                this.Ct.ThrowIfCancellationRequested();
+
+                if (reader.Entry.IsDirectory)
                 {
-                    ExtractFullPath = true,
-                    PreserveFileTime = true,
-                    Overwrite = true
-                };
-                foreach (IArchiveEntry entry in archive.Entries.Where(e => !e.IsDirectory))
-                {
-                    this.Ct.ThrowIfCancellationRequested();
-                    entry.WriteToDirectory(zipExtractionDir, options);
+                    continue;
                 }
-            }, this.Ct);
+
+                this.ProgressHandler?.Report((null, 0, $"Extracting: {reader.Entry.Key}", null, null));
+
+                string entryKey = reader.Entry.Key ?? string.Empty;
+                string destPath = Path.Combine(zipExtractionDir, entryKey.Replace('/', Path.DirectorySeparatorChar));
+                string? destDir = Path.GetDirectoryName(destPath);
+                if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
+                {
+                    Directory.CreateDirectory(destDir);
+                }
+
+                await using var fileStream = new FileStream(
+                    destPath,
+                    FileMode.Create,
+                    FileAccess.Write,
+                    FileShare.None,
+                    bufferSize: 81920,
+                    useAsync: true);
+
+                await reader.WriteEntryToAsync(fileStream, this.Ct);
+            }
         }
         catch (OperationCanceledException e)
         {
             result.Errors.Add(e.Message);
+            if (Directory.Exists(zipExtractionDir))
+            {
+                Directory.Delete(zipExtractionDir, true);
+            }
+
+            return result;
         }
         catch (Exception e)
         {
             result.Errors.Add("Error occured " + e.Message);
+            if (Directory.Exists(zipExtractionDir))
+            {
+                Directory.Delete(zipExtractionDir, true);
+            }
+
+            return result;
         }
 
-        // keep the temp folder reference for cleanup later
         this._tempFolderLocation = zipExtractionDir;
 
-        //set the files to the temporary folder where the archive is extracted
-        this.Files = Directory.GetFiles(zipExtractionDir, "*.*", SearchOption.AllDirectories);
+        this.Files =
+        [
+            .. Directory.GetFiles(zipExtractionDir, "*.*", SearchOption.AllDirectories)
+                .Where(file => IsPdf(file) && (!this.IgnoreCompressedFiles ||
+                                               !Path.GetFileNameWithoutExtension(file).Contains(this.CompressedSuffix,
+                                                   StringComparison.OrdinalIgnoreCase)))
+        ];
 
-        this.PdfFilesCount = this.Files.Count(file => file.EndsWith(".pdf", StringComparison.OrdinalIgnoreCase));
+        this.PdfFilesCount = this.Files.Count();
 
         return result;
     }
 
     protected override CompressionResult PostFileCompress(string originalFilePath, string compressedFilePath)
     {
-        throw new System.NotImplementedException();
+        return new CompressionResult();
     }
 
     protected override async Task<CompressionResult> PostCompressionAsync()
@@ -87,13 +146,7 @@ public class ArchiveCompressor : Compressor
             return result;
         }
 
-        // get all files in the temp directory
-        IEnumerable<string> files =
-            Directory.EnumerateFiles(this._tempFolderLocation, "*.*", SearchOption.AllDirectories);
-
-        // // specify the root directory to output the compressed archive
-        // string targetRootDirectory = this.InputFilesPath
-        //     .TrimEnd(Path.DirectorySeparatorChar, Path.AltDirectorySeparatorChar) + "_compressed";
+        IEnumerable<string> files = this.FilterFilesForArchive(this._tempFolderLocation);
 
         try
         {
@@ -105,26 +158,51 @@ public class ArchiveCompressor : Compressor
             }
 
             string originalArchiveName = Path.GetFileNameWithoutExtension(this.InputFilesPath);
-            string destName = Path.Combine(resultDir, $"{originalArchiveName}{CompressedSuffix}.zip");
+            string? destName = Path.Combine(resultDir, $"{originalArchiveName}{this.CompressedSuffix}.zip");
             int counter = 1;
             while (File.Exists(destName))
             {
-                destName = Path.Combine(resultDir, $"{originalArchiveName}{CompressedSuffix}({counter}).zip");
+                destName = Path.Combine(resultDir, $"{originalArchiveName}{this.CompressedSuffix}({counter}).zip");
                 counter++;
             }
 
-            /*write a new archive with the files from the temp folder to the original
-            location where the archive existed
-             */
-            await using FileStream stream = File.Create(destName);
-            await using IAsyncWriter writer = await WriterFactory
-                .OpenAsyncWriter(stream, ArchiveType.Zip,
-                    new WriterOptions(CompressionType.Deflate)
-                    {
-                        ArchiveEncoding = new ArchiveEncoding { Forced = Encoding.UTF8 }
-                    }, this.Ct);
+            await using FileStream stream = new(
+                destName,
+                FileMode.Create,
+                FileAccess.Write,
+                FileShare.None,
+                bufferSize: 81920,
+                useAsync: true);
 
-            await writer.WriteAllAsync(this._tempFolderLocation, "*", SearchOption.AllDirectories, this.Ct);
+            await using var writer = await WriterFactory.OpenAsyncWriter(
+                stream, ArchiveType.Zip,
+                new WriterOptions(CompressionType.Deflate)
+                {
+                    ArchiveEncoding = new ArchiveEncoding { Forced = Encoding.UTF8 }
+                }, this.Ct);
+
+            foreach (string file in files)
+            {
+                this.Ct.ThrowIfCancellationRequested();
+                
+                this.ProgressHandler?.Report((null, 0, $"Writing to archive: {Path.GetFileName(file)}", null, null));
+
+                await using FileStream fileStream = new(
+                    file,
+                    FileMode.Open,
+                    FileAccess.Read,
+                    FileShare.Read,
+                    bufferSize: 81920,
+                    useAsync: true);
+                
+                string entryName = Path.GetRelativePath(this._tempFolderLocation, file)
+                    .Replace(Path.DirectorySeparatorChar, '/')
+                    .Replace(Path.AltDirectorySeparatorChar, '/');
+                
+                await writer.WriteAsync(entryName, fileStream, File.GetLastWriteTime(file), this.Ct);
+            }
+
+            this.AfterSizeBytes = new FileInfo(destName).Length;
         }
         catch (Exception e)
         {
@@ -132,13 +210,11 @@ public class ArchiveCompressor : Compressor
         }
         finally
         {
-            // finally cleanup the temp directory
             if (Directory.Exists(this._tempFolderLocation))
             {
                 Directory.Delete(this._tempFolderLocation, true);
             }
         }
-
 
         return result;
     }

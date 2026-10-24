@@ -1,6 +1,6 @@
 # <img src="SharpPDFCompressor/Assets/logo3.png" width="128"> <br> SharpPDFCompressor
 
-A free and open source (FOSS) native WinUI3 application that compresses pdf files. Based on [ghostscript](https://ghostscript.com/) as the underlying compression engine.
+A free and open source (FOSS) native WinUI3 application that compresses PDF files using [MuPDF.NET](https://github.com/ArtifexSoftware/MuPDF.NET).
 
 ## How it works
 

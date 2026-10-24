@@ -32,6 +32,7 @@
 
         <Grid Row="1" Padding="1">
             <NavigationView
+                x:Name="MainNavigationView"
                 PaneDisplayMode="LeftCompact"
                 IsBackButtonVisible="Collapsed"
                 SelectionChanged="SideMenu_SelectionChanged">
@@ -41,6 +42,17 @@
                         Icon="Home"
                         x:Name="HomePageSideButton" />
                 </NavigationView.MenuItems>
+                <NavigationView.FooterMenuItems>
+                    <NavigationViewItem
+                        x:Name="ThemeToggleSideButton"
+                        Content="Theme"
+                        SelectsOnInvoked="False"
+                        PointerPressed="ThemeToggle_PointerPressed">
+                        <NavigationViewItem.Icon>
+                            <FontIcon x:Name="ThemeIcon" Glyph="&#xE7F4;" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </NavigationView.FooterMenuItems>
                 <Frame x:Name="ContentFrame" />
             </NavigationView>
         </Grid>

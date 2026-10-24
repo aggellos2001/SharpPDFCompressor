@@ -1,18 +1,24 @@
 using Microsoft.UI.Xaml.Controls;
 using SharpPDFCompressor.ViewModels;
-using System;
-using System.IO;
+using System.Diagnostics.CodeAnalysis;
 
 namespace SharpPDFCompressor.Ui;
 
 public sealed partial class Home : Page
 {
-    private static readonly string DllPath = Path.Combine(AppContext.BaseDirectory, "Runtimes", "gsdll64.dll");
-
     public Home()
     {
         this.InitializeComponent();
     }
 
-    public HomeViewModel ViewModel { get; } = new();
+    private static HomeViewModel? _sharedViewModel;
+
+    // ReSharper disable once MemberCanBeMadeStatic.Global
+    [SuppressMessage("Performance", "CA1822:Mark members as static")]
+    public HomeViewModel ViewModel => _sharedViewModel ??= new HomeViewModel();
+
+    private void ResetCompressedSuffix_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        this.ViewModel.CompressedSuffix = Compressor.DefaultCompressedSuffix;
+    }
 }
