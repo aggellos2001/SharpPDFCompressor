@@ -279,4 +279,70 @@
   <data name="AdvancedSettingsExpander.Header" xml:space="preserve">
     <value>Advanced settings</value>
   </data>
+  <data name="DeleteOriginalCardHeader" xml:space="preserve">
+    <value>Delete original .pdf files</value>
+  </data>
+  <data name="DeleteOriginalCardDescription" xml:space="preserve">
+    <value>When enabled, all original .pdf files are deleted.</value>
+  </data>
+  <data name="CreateNewFolderCardHeader" xml:space="preserve">
+    <value>Compress to a new folder</value>
+  </data>
+  <data name="CreateNewFolderCardDescription" xml:space="preserve">
+    <value>When enabled, compressed files are created in a new folder at the same path as the folder you selected for compression.</value>
+  </data>
+  <data name="AppDataSettingsCard.Header" xml:space="preserve">
+    <value>App data</value>
+  </data>
+  <data name="AppDataSettingsCard.Description" xml:space="preserve">
+    <value>Open the folder where the app stores its local data.</value>
+  </data>
+  <data name="OpenAppDataFolderButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Open app data folder</value>
+  </data>
+  <data name="OpenAppDataFolderButtonText.Text" xml:space="preserve">
+    <value>Open app data folder</value>
+  </data>
+  <data name="LanguageSettingsCard.Header" xml:space="preserve">
+    <value>App language</value>
+  </data>
+  <data name="LanguageSettingsCard.Description" xml:space="preserve">
+    <value>Follow the Windows language or choose Greek or English.</value>
+  </data>
+  <data name="LanguageSystemOption.Content" xml:space="preserve">
+    <value>Use Windows language</value>
+  </data>
+  <data name="LanguageEnglishOption.Content" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="LanguageGreekOption.Content" xml:space="preserve">
+    <value>Greek</value>
+  </data>
+  <data name="LanguageToggleSideButton.Content" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="LanguageToggleAutoTooltip" xml:space="preserve">
+    <value>Language: Follow Windows ({0})</value>
+  </data>
+  <data name="LanguageToggleEnglishTooltip" xml:space="preserve">
+    <value>Language: English</value>
+  </data>
+  <data name="LanguageToggleGreekTooltip" xml:space="preserve">
+    <value>Language: Greek</value>
+  </data>
+  <data name="ThemeToggleSideButton.Content" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="WorkerProgressExpander.Header" xml:space="preserve">
+    <value>Compression log</value>
+  </data>
+  <data name="WorkerProgressExpander.Description" xml:space="preserve">
+    <value>Live log of files being compressed by the workers.</value>
+  </data>
+  <data name="CompressionDone" xml:space="preserve">
+    <value>Completed.</value>
+  </data>
+  <data name="CompressionDoneSummary" xml:space="preserve">
+    <value>Completed — Before: {0}; After: {1}; Reduction: {2} ({3:0.0}%).</value>
+  </data>
 </root>

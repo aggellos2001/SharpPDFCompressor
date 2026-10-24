@@ -181,7 +181,7 @@
     <value>Το μήνυμα σφάλματος αντιγράφηκε στο πρόχειρο επιτυχώς.</value>
   </data>
   <data name="SettingsTitle.Text" xml:space="preserve">
-    <value>Σχετικά με</value>
+    <value>Ρυθμίσεις</value>
   </data>
   <data name="InvalidFileException" xml:space="preserve">
     <value>Το αρχείο που επιλέξατε δεν είναι pdf ή δεν υπάρχει.</value>
@@ -198,11 +198,17 @@
   <data name="IgnoreCompressedFilesCard.Description" xml:space="preserve">
     <value>Παραλείπει PDF των οποίων τα ονόματα περιέχουν ήδη το επίθημα συμπίεσης.</value>
   </data>
-  <data name="DeleteOriginalFilesSwitch.Header" xml:space="preserve">
+  <data name="DeleteOriginalCardHeader" xml:space="preserve">
     <value>Διαγραφή των αρχικών .pdf αρχείων</value>
   </data>
-  <data name="DeleteOriginalFilesSwitch.Description" xml:space="preserve">
+  <data name="DeleteOriginalCardDescription" xml:space="preserve">
     <value>Όταν είναι ενεργή η επιλογή, όλα τα αρχικά .pdf αρχεία διαγράφονται.</value>
+  </data>
+  <data name="CreateNewFolderCardHeader" xml:space="preserve">
+    <value>Συμπίεση σε νέο φάκελο</value>
+  </data>
+  <data name="CreateNewFolderCardDescription" xml:space="preserve">
+    <value>Όταν είναι ενεργή η επιλογή, τα συμπιεσμένα αρχεία δημιουργούνται σε έναν νέο φάκελο στην ίδια διαδρομή με τον φάκελο που επιλέξατε για συμπίεση.</value>
   </data>
   <data name="CompressImages.Header" xml:space="preserve">
     <value>Συμπίεση εικόνων</value>
@@ -249,17 +255,53 @@
   <data name="LongNameException" xml:space="preserve">
     <value>Η διαδρομή του αρχείου ξεπερνάει το όριο των 250 χαρακτήρων. Μειώστε τα ονόματα των φακέλων και των αρχείων και δοκιμάστε ξανά.</value>
   </data>
-  <data name="CreateNewFolder.Description" xml:space="preserve">
-    <value>Όταν είναι ενεργή η επιλογή, τα συμπιεσμένα αρχεία δημιουργούνται σε έναν νέο φάκελο στην ίδια διαδρομή με τον φάκελο που επιλέξατε για συμπίεση.</value>
-  </data>
-  <data name="CreateNewFolder.Header" xml:space="preserve">
-    <value>Συμπίεση σε νέο φάκελο</value>
-  </data>
   <data name="ThemeSettingsCard.Header" xml:space="preserve">
     <value>Θέμα εφαρμογής</value>
   </data>
   <data name="ThemeSettingsCard.Description" xml:space="preserve">
     <value>Επιλέξτε αν η εφαρμογή θα ακολουθεί το θέμα του συστήματος ή θα χρησιμοποιεί φωτεινή ή σκοτεινή λειτουργία.</value>
+  </data>
+  <data name="LanguageSettingsCard.Header" xml:space="preserve">
+    <value>Γλώσσα εφαρμογής</value>
+  </data>
+  <data name="LanguageSettingsCard.Description" xml:space="preserve">
+    <value>Ακολουθήστε τη γλώσσα των Windows ή επιλέξτε ελληνικά ή αγγλικά.</value>
+  </data>
+  <data name="AppDataSettingsCard.Header" xml:space="preserve">
+    <value>Δεδομένα εφαρμογής</value>
+  </data>
+  <data name="AppDataSettingsCard.Description" xml:space="preserve">
+    <value>Ανοίξτε τον φάκελο όπου η εφαρμογή αποθηκεύει τα τοπικά δεδομένα της.</value>
+  </data>
+  <data name="OpenAppDataFolderButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Άνοιγμα φακέλου δεδομένων εφαρμογής</value>
+  </data>
+  <data name="OpenAppDataFolderButtonText.Text" xml:space="preserve">
+    <value>Άνοιγμα φακέλου δεδομένων εφαρμογής</value>
+  </data>
+  <data name="LanguageSystemOption.Content" xml:space="preserve">
+    <value>Χρήση γλώσσας Windows</value>
+  </data>
+  <data name="LanguageEnglishOption.Content" xml:space="preserve">
+    <value>Αγγλικά</value>
+  </data>
+  <data name="LanguageGreekOption.Content" xml:space="preserve">
+    <value>Ελληνικά</value>
+  </data>
+  <data name="LanguageToggleSideButton.Content" xml:space="preserve">
+    <value>Γλώσσα</value>
+  </data>
+  <data name="LanguageToggleAutoTooltip" xml:space="preserve">
+    <value>Γλώσσα: Ακολουθήστε τα Windows ({0})</value>
+  </data>
+  <data name="LanguageToggleEnglishTooltip" xml:space="preserve">
+    <value>Γλώσσα: Αγγλικά</value>
+  </data>
+  <data name="LanguageToggleGreekTooltip" xml:space="preserve">
+    <value>Γλώσσα: Ελληνικά</value>
+  </data>
+  <data name="ThemeToggleSideButton.Content" xml:space="preserve">
+    <value>Θέμα</value>
   </data>
   <data name="ThemeSystemOption.Content" xml:space="preserve">
     <value>Χρήση ρύθμισης συστήματος</value>
@@ -278,5 +320,17 @@
   </data>
   <data name="AdvancedSettingsExpander.Header" xml:space="preserve">
     <value>Προηγμένες ρυθμίσεις</value>
+  </data>
+  <data name="WorkerProgressExpander.Header" xml:space="preserve">
+    <value>Καταγραφή συμπίεσης</value>
+  </data>
+  <data name="WorkerProgressExpander.Description" xml:space="preserve">
+    <value>Ζωντανή καταγραφή των αρχείων που συμπιέζονται από τις διεργασίες.</value>
+  </data>
+  <data name="CompressionDone" xml:space="preserve">
+    <value>Ολοκληρώθηκε.</value>
+  </data>
+  <data name="CompressionDoneSummary" xml:space="preserve">
+    <value>Ολοκληρώθηκε — Πριν: {0}; Μετά: {1}; Μείωση: {2} ({3:0.0}%).</value>
   </data>
 </root>

@@ -6,6 +6,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:localizer="using:WinUI3Localizer"
     xmlns:winex="using:WinUIEx"
     MinWidth="1250"
     MinHeight="600"
@@ -38,18 +39,29 @@
                 SelectionChanged="SideMenu_SelectionChanged">
                 <NavigationView.MenuItems>
                     <NavigationViewItem
-                        x:Uid="HomePageButton"
+                        localizer:Uids.Uid="HomePageButton"
                         Icon="Home"
                         x:Name="HomePageSideButton" />
                 </NavigationView.MenuItems>
                 <NavigationView.FooterMenuItems>
                     <NavigationViewItem
+                        localizer:Uids.Uid="ThemeToggleSideButton"
                         x:Name="ThemeToggleSideButton"
                         Content="Theme"
                         SelectsOnInvoked="False"
                         PointerPressed="ThemeToggle_PointerPressed">
                         <NavigationViewItem.Icon>
                             <FontIcon x:Name="ThemeIcon" Glyph="&#xE7F4;" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem
+                        localizer:Uids.Uid="LanguageToggleSideButton"
+                        x:Name="LanguageToggleSideButton"
+                        Content="Language"
+                        SelectsOnInvoked="False"
+                        PointerPressed="LanguageToggle_PointerPressed">
+                        <NavigationViewItem.Icon>
+                            <FontIcon x:Name="LanguageCode" FontFamily="Segoe UI" Glyph="EN" />
                         </NavigationViewItem.Icon>
                     </NavigationViewItem>
                 </NavigationView.FooterMenuItems>

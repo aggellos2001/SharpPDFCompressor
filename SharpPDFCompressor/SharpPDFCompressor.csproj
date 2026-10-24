@@ -58,9 +58,16 @@
         <PackageReference Include="CommunityToolkit.WinUI.Controls.SettingsControls" Version="8.2.251219"/>
         <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.28000.2705"/>
         <PackageReference Include="Microsoft.WindowsAppSDK" Version="2.5.1"/>
+        <PackageReference Include="WinUI3Localizer" Version="2.3.0"/>
         <PackageReference Include="WinUIEx" Version="2.9.3"/>
         <PackageReference Include="SharpCompress" Version="0.50.7"/>
         <PackageReference Include="MuPDF.NET" Version="3.28.2.4"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Strings\**\*.resw">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
     </ItemGroup>
 
     <ItemGroup>
@@ -85,6 +92,9 @@
 
     <ItemGroup>
         <PRIResource Update="Strings\en-US\Resources.resw">
+            <Generator>ResXFileCodeGenerator</Generator>
+        </PRIResource>
+        <PRIResource Update="Strings\el-GR\Resources.resw">
             <Generator>ResXFileCodeGenerator</Generator>
         </PRIResource>
     </ItemGroup>

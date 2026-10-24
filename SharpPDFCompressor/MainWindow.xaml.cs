@@ -1,9 +1,16 @@
 using Microsoft.UI.Composition.SystemBackdrops;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
+using SharpPDFCompressor.DataModels;
 using SharpPDFCompressor.Ui;
+using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using WinUI3Localizer;
 using WinUIEx;
 
 namespace SharpPDFCompressor;
@@ -24,14 +31,32 @@ public sealed partial class MainWindow : WindowEx
         Dark
     }
 
-    private AppTheme _currentTheme = AppTheme.Default;
+    public enum AppLanguage
+    {
+        English,
+        Greek
+    }
+
+    private AppTheme _currentTheme;
     private object? _selectionBeforeThemeToggle;
+    private AppLanguage _currentLanguage;
+    private LanguagePreference _languagePreference;
 
     public AppTheme CurrentTheme => this._currentTheme;
+    public AppLanguage CurrentLanguage => this._currentLanguage;
+
+    public string LanguageTooltip { get; private set; } = string.Empty;
+
+    public event PropertyChangedEventHandler? PropertyChanged;
 
     public MainWindow()
     {
         this.InitializeComponent();
+        this._currentTheme = (AppTheme)App.Settings.Theme;
+        this._languagePreference = App.Settings.Language;
+        this._currentLanguage = (AppLanguage)((int)App.Settings.ResolvedLanguage - 1);
+        this.UpdateLanguageCode();
+        this.ApplyTheme(this._currentTheme);
         //navigates to the home screen when the application opens
         this.HomePageSideButton.IsSelected = true;
 
@@ -59,7 +84,7 @@ public sealed partial class MainWindow : WindowEx
 
     private void SideMenu_SelectionChanged(NavigationView sender, NavigationViewSelectionChangedEventArgs args)
     {
-        if (args.SelectedItemContainer?.Name == "ThemeToggleSideButton")
+        if (args.SelectedItemContainer?.Name is "ThemeToggleSideButton" or "LanguageToggleSideButton")
         {
             this.MainNavigationView.SelectedItem = this._selectionBeforeThemeToggle;
             return;
@@ -116,9 +141,107 @@ public sealed partial class MainWindow : WindowEx
         this.ApplyTheme(nextTheme);
     }
 
+    private async void LanguageToggle_PointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        e.Handled = true;
+        this._selectionBeforeThemeToggle = this.MainNavigationView.SelectedItem;
+
+        // Cycle through preferences: System -> English -> Greek -> System
+        LanguagePreference nextPreference = this._languagePreference switch
+        {
+            LanguagePreference.System => LanguagePreference.English,
+            LanguagePreference.English => LanguagePreference.Greek,
+            _ => LanguagePreference.System
+        };
+
+        if (nextPreference == LanguagePreference.System)
+        {
+            await this.ApplySystemLanguage();
+        }
+        else
+        {
+            AppLanguage language = nextPreference == LanguagePreference.English
+                ? AppLanguage.English
+                : AppLanguage.Greek;
+            await this.ApplyLanguage(language);
+        }
+    }
+
+    public async Task ApplyLanguage(AppLanguage language)
+    {
+        LanguagePreference preference = (LanguagePreference)((int)language + 1);
+        App.Settings.Language = preference;
+        this._languagePreference = preference;
+        await this.UpdateLanguage(language);
+        AppSettingsStore.Save(App.Settings);
+    }
+
+    public async Task ApplySystemLanguage()
+    {
+        App.Settings.Language = LanguagePreference.System;
+        this._languagePreference = LanguagePreference.System;
+        await this.UpdateLanguage((AppLanguage)((int)App.Settings.ResolvedLanguage - 1));
+        AppSettingsStore.Save(App.Settings);
+    }
+
+    private async Task UpdateLanguage(AppLanguage language)
+    {
+        await Localizer.Get().SetLanguage(GetLanguageTag(language));
+        this._currentLanguage = language;
+        this.UpdateLanguageCode();
+
+        if (this.ContentFrame.Content is Settings settingsPage)
+        {
+            settingsPage.UpdateLanguageSelection(App.Settings.Language, language);
+        }
+    }
+
+    private void UpdateLanguageCode()
+    {
+        this.LanguageCode.Glyph = this._languagePreference switch
+        {
+            LanguagePreference.System => "AUTO",
+            LanguagePreference.English => "EN",
+            LanguagePreference.Greek => "ΕΛ",
+            _ => "EN"
+        };
+        this.UpdateLanguageTooltip();
+    }
+
+    private void UpdateLanguageTooltip()
+    {
+        string resolvedName = this._currentLanguage == AppLanguage.English ? "English" : "Greek";
+        string tooltip = this._languagePreference switch
+        {
+            LanguagePreference.System => $"Language: Follow Windows ({resolvedName})",
+            LanguagePreference.English => "Language: English",
+            LanguagePreference.Greek => "Language: Greek",
+            _ => string.Empty
+        };
+        this.LanguageTooltip = tooltip;
+        ToolTipService.SetToolTip(this.LanguageToggleSideButton, tooltip);
+        this.OnPropertyChanged();
+    }
+
+    private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+    {
+        this.PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
+    }
+
+    internal static string GetLanguageTag(AppLanguage language)
+    {
+        return language switch
+        {
+            AppLanguage.Greek => "el-GR",
+            _ => "en-US"
+        };
+    }
+
     public void ApplyTheme(AppTheme theme)
     {
         this._currentTheme = theme;
+        App.Settings.Theme = (ThemePreference)theme;
+        AppSettingsStore.Save(App.Settings);
         ElementTheme requestedTheme = this._currentTheme switch
         {
             AppTheme.Light => ElementTheme.Light,
@@ -129,6 +252,13 @@ public sealed partial class MainWindow : WindowEx
         {
             rootElement.RequestedTheme = requestedTheme;
         }
+
+        this.AppWindow.TitleBar.ButtonForegroundColor = requestedTheme == ElementTheme.Dark
+            ? Colors.White
+            : null;
+        this.AppWindow.TitleBar.ButtonInactiveForegroundColor = requestedTheme == ElementTheme.Dark
+            ? Colors.LightGray
+            : null;
 
         this.ThemeIcon.Glyph = this._currentTheme switch
         {

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 
@@ -5,9 +6,10 @@ namespace SharpPDFCompressor.ViewModels;
 
 public sealed class FileCompressor : Compressor
 {
-    private string? _compressedFilePath;
+    public IReadOnlyList<string>? InputFilePaths { get; init; }
+
     /// <summary>
-    ///     Creates a compressor class for single PDF files.
+    ///     Creates a compressor class for PDF files.
     /// </summary>
     /// <returns></returns>
     /// <exception cref="FileNotFoundException">
@@ -16,22 +18,28 @@ public sealed class FileCompressor : Compressor
     protected override async Task<CompressionResult> PreCompressAsync()
     {
         CompressionResult result = new();
-        if (!File.Exists(this.InputFilesPath) || !Path.GetExtension(this.InputFilesPath).ToLower().EndsWith("pdf"))
+        List<string> inputFiles = this.InputFilePaths is { Count: > 0 }
+            ? [.. this.InputFilePaths]
+            : [this.InputFilesPath];
+
+        foreach (string inputFile in inputFiles)
         {
-            result.Errors.Add("File not found!");
-            return result;
+            if (!File.Exists(inputFile) || !IsPdf(inputFile))
+            {
+                result.Errors.Add("File not found!");
+                return result;
+            }
         }
 
-        this.Files = [this.InputFilesPath];
-        this.PdfFilesCount = 1;
-        this.BeforeSizeBytes = new FileInfo(this.InputFilesPath).Length;
+        this.Files = inputFiles;
+        this.PdfFilesCount = inputFiles.Count;
+        this.BeforeSizeBytes = GetFilesSize(inputFiles);
 
         return result;
     }
 
     protected override CompressionResult PostFileCompress(string originalFilePath, string compressedFilePath)
     {
-        this._compressedFilePath = compressedFilePath;
         if (!this.DeleteOriginalFiles)
         {
             return new CompressionResult();
@@ -45,14 +53,5 @@ public sealed class FileCompressor : Compressor
         return new CompressionResult();
     }
 
-    protected override async Task<CompressionResult> PostCompressionAsync()
-    {
-        string? outputPath = this.DeleteOriginalFiles ? this.InputFilesPath : this._compressedFilePath;
-        if (outputPath is not null && File.Exists(outputPath))
-        {
-            this.AfterSizeBytes = new FileInfo(outputPath).Length;
-        }
-
-        return new CompressionResult();
-    }
+    protected override Task<CompressionResult> PostCompressionAsync() => Task.FromResult(new CompressionResult());
 }

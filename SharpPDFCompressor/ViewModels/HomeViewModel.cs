@@ -3,7 +3,6 @@ using CommunityToolkit.Mvvm.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
-using Microsoft.Windows.ApplicationModel.Resources;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using SharpPDFCompressor.Ui;
@@ -17,26 +16,63 @@ using Windows.ApplicationModel.DataTransfer;
 using Windows.Storage;
 using Windows.Storage.Pickers;
 using WinRT.Interop;
+using WinUI3Localizer;
 using static System.Boolean;
 
 namespace SharpPDFCompressor.ViewModels;
 
 public partial class HomeViewModel : ObservableObject
 {
-    private readonly ResourceLoader _resourceLoader = new();
+    private readonly ILocalizer _localizer = Localizer.Get();
+    private readonly List<string> _selectedPdfPaths = [];
     private CancellationTokenSource? _cts;
+    private string _deleteOriginalCardHeaderKey = "DeleteOriginalCardHeader";
+    private string _deleteOriginalCardDescriptionKey = "DeleteOriginalCardDescription";
 
     public HomeViewModel()
     {
-        this.DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
-        this.DeleteOriginalCardDescription = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
+        this._localizer.LanguageChanged += this.Localizer_LanguageChanged;
+        this.UpdateDeleteOriginalCardLabels();
+    }
+
+    private void Localizer_LanguageChanged(object? sender, LanguageChangedEventArgs e) =>
+        this.UpdateDeleteOriginalCardLabels();
+
+    private void UpdateDeleteOriginalCardLabels()
+    {
+        this.DeleteOriginalCardHeader = this._localizer.GetLocalizedString(this._deleteOriginalCardHeaderKey);
+        this.DeleteOriginalCardDescription = this._localizer.GetLocalizedString(this._deleteOriginalCardDescriptionKey);
+    }
+
+    private void SetDeleteOriginalCardLabelKeys(string keyPrefix)
+    {
+        this._deleteOriginalCardHeaderKey = $"{keyPrefix}CardHeader";
+        this._deleteOriginalCardDescriptionKey = $"{keyPrefix}CardDescription";
+        this.UpdateDeleteOriginalCardLabels();
     }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(CompressionButtonEnabled))]
     public partial string FilePath { get; private set; } = string.Empty;
 
-    public bool CompressionButtonEnabled => !string.IsNullOrWhiteSpace(this.FilePath) && Path.Exists(this.FilePath);
+    public bool CompressionButtonEnabled => this._selectedPdfPaths.Count > 0
+        ? this._selectedPdfPaths.TrueForAll(File.Exists)
+        : !string.IsNullOrWhiteSpace(this.FilePath) && Path.Exists(this.FilePath);
+
+    private void SetFilePath(string? path)
+    {
+        this._selectedPdfPaths.Clear();
+        this.FilePath = path ?? string.Empty;
+    }
+
+    private void SetPdfSelection(IEnumerable<string> paths)
+    {
+        this._selectedPdfPaths.Clear();
+        this._selectedPdfPaths.AddRange(paths);
+        this.FilePath = string.Join(Environment.NewLine, this._selectedPdfPaths);
+    }
+
+    private static bool IsPdf(string path) => Path.GetExtension(path).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
 
     [ObservableProperty] public partial string ParallelismLevel { get; set; } = GetNearestParallelismLevel(Environment.ProcessorCount).ToString();
 
@@ -99,16 +135,33 @@ public partial class HomeViewModel : ObservableObject
             };
 
             InitializeWithWindow.Initialize(openPicker, hWnd);
-            StorageFile? file = await openPicker.PickSingleFileAsync();
-
-
-            this.FilePath = file?.Path ?? string.Empty;
-
-            if (string.IsNullOrEmpty(this.FilePath))
+            IReadOnlyList<StorageFile> files = await openPicker.PickMultipleFilesAsync();
+            if (files.Count == 0)
             {
+                this.SetFilePath(string.Empty);
                 return;
             }
 
+            if (files.Count > 1)
+            {
+                List<string> pdfPaths = [];
+                foreach (StorageFile selectedFile in files)
+                {
+                    if (IsPdf(selectedFile.Path))
+                    {
+                        pdfPaths.Add(selectedFile.Path);
+                    }
+                }
+
+                this.SetPdfSelection(pdfPaths);
+                this.DeleteOriginalFiles = false;
+                this.EnabledDeleteOriginalFilesButton = true;
+                this.SetDeleteOriginalCardLabelKeys("DeleteOriginal");
+                return;
+            }
+
+            StorageFile file = files[0];
+            this.SetFilePath(file.Path);
             this.DeleteOriginalFiles = false;
 
             bool isArchive = false;
@@ -123,9 +176,7 @@ public partial class HomeViewModel : ObservableObject
 
             this.EnabledDeleteOriginalFilesButton = !isArchive;
 
-            this.DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
-            this.DeleteOriginalCardDescription =
-                this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
+            this.SetDeleteOriginalCardLabelKeys("DeleteOriginal");
         }
         else
         {
@@ -137,19 +188,19 @@ public partial class HomeViewModel : ObservableObject
             openPicker.SuggestedStartLocation = PickerLocationId.DocumentsLibrary;
             openPicker.FileTypeFilter.Add(".pdf");
             StorageFolder? folder = await openPicker.PickSingleFolderAsync();
-            this.FilePath = folder?.Path ?? string.Empty;
+            this.SetFilePath(folder?.Path);
 
             this.DeleteOriginalFiles = false;
+            this.EnabledDeleteOriginalFilesButton = true;
 
-            this.DeleteOriginalCardHeader = this._resourceLoader.GetString("CreateNewFolder/Header");
-            this.DeleteOriginalCardDescription = this._resourceLoader.GetString("CreateNewFolder/Description");
+            this.SetDeleteOriginalCardLabelKeys("CreateNewFolder");
         }
     }
 
     public void OnDragOver(object _, DragEventArgs e)
     {
         e.AcceptedOperation = DataPackageOperation.Copy;
-        e.DragUIOverride.Caption = "Drop your file here";
+        e.DragUIOverride.Caption = this._localizer.GetLocalizedString("DragUICaption");
         e.DragUIOverride.IsCaptionVisible = true;
     }
 
@@ -163,43 +214,52 @@ public partial class HomeViewModel : ObservableObject
         DragOperationDeferral? deferral = e.GetDeferral();
         try
         {
-            IReadOnlyList<IStorageItem>? items = await e.DataView.GetStorageItemsAsync();
+            IReadOnlyList<IStorageItem> items = await e.DataView.GetStorageItemsAsync();
             if (items.Count == 0)
             {
                 return;
             }
 
-            IStorageItem droppedItem = items[0];
-
-            bool isArchive = false;
-            if (!Directory.Exists(droppedItem.Path))
+            StorageFolder? droppedFolder = null;
+            foreach (IStorageItem item in items)
             {
-                ArchiveFactory.IsArchive(droppedItem.Path, out ArchiveType? archiveType);
-                if (archiveType is not null)
+                if (item is StorageFolder folder)
                 {
-                    isArchive = true;
+                    droppedFolder = folder;
+                    break;
                 }
             }
 
-            switch (droppedItem)
+            if (droppedFolder is not null)
             {
-                case StorageFolder folder:
-                    this.FilePath = folder.Path;
-                    this.DeleteOriginalFiles = false;
-                    this.DeleteOriginalCardHeader = this._resourceLoader.GetString("CreateNewFolder/Header");
-                    this.DeleteOriginalCardDescription = this._resourceLoader.GetString("CreateNewFolder/Description");
-                    break;
-                case StorageFile file when file.Path.ToLower().EndsWith("pdf") || isArchive:
-                    this.FilePath = file.Path;
-                    this.DeleteOriginalFiles = false;
-                    this.DeleteOriginalCardHeader = this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Header");
-                    this.DeleteOriginalCardDescription =
-                        this._resourceLoader.GetString("DeleteOriginalFilesSwitch/Description");
-                    this.EnabledDeleteOriginalFilesButton = !isArchive;
-                    break;
-                default:
-                    this.FilePath = "";
-                    break;
+                this.SetFilePath(droppedFolder.Path);
+                this.DeleteOriginalFiles = false;
+                this.EnabledDeleteOriginalFilesButton = true;
+                this.SetDeleteOriginalCardLabelKeys("CreateNewFolder");
+            }
+            else if (items.Count == 1 && items[0] is StorageFile archiveFile &&
+                     ArchiveFactory.IsArchive(archiveFile.Path, out ArchiveType? archiveType) && archiveType is not null)
+            {
+                this.SetFilePath(archiveFile.Path);
+                this.DeleteOriginalFiles = false;
+                this.SetDeleteOriginalCardLabelKeys("DeleteOriginal");
+                this.EnabledDeleteOriginalFilesButton = false;
+            }
+            else
+            {
+                List<string> pdfPaths = [];
+                foreach (IStorageItem item in items)
+                {
+                    if (item is StorageFile file && IsPdf(file.Path))
+                    {
+                        pdfPaths.Add(file.Path);
+                    }
+                }
+
+                this.SetPdfSelection(pdfPaths);
+                this.DeleteOriginalFiles = false;
+                this.EnabledDeleteOriginalFilesButton = true;
+                this.SetDeleteOriginalCardLabelKeys("DeleteOriginal");
             }
         }
         finally
@@ -216,7 +276,7 @@ public partial class HomeViewModel : ObservableObject
 
         this._cts.Token.Register(() =>
         {
-            this.FilePath = "";
+            this.SetFilePath(string.Empty);
         });
 
         XamlUICommand buttonCancelCommand = new();
@@ -242,9 +302,9 @@ public partial class HomeViewModel : ObservableObject
         {
             XamlRoot = xamlRoot,
             Style = Application.Current.Resources["DefaultContentDialogStyle"] as Style,
-            Title = this._resourceLoader.GetString("Compressing"),
+            Title = this._localizer.GetLocalizedString("Compressing"),
             PrimaryButtonText = string.Empty,
-            CloseButtonText = this._resourceLoader.GetString("Cancel"),
+            CloseButtonText = this._localizer.GetLocalizedString("Cancel"),
             CloseButtonCommand = buttonCancelCommand,
             DefaultButton = ContentDialogButton.Primary,
             IsPrimaryButtonEnabled = false
@@ -258,10 +318,10 @@ public partial class HomeViewModel : ObservableObject
             }
 
             this._cts.Cancel();
-            dialog.Title = this._resourceLoader.GetString("CancelOperation");
+            dialog.Title = this._localizer.GetLocalizedString("CancelOperation");
             progressDialogViewModel.CurrentFileBeingCompressed =
-                this._resourceLoader.GetString("CancelOperationExplanation");
-            dialog.CloseButtonText = this._resourceLoader.GetString("PleaseWait");
+                this._localizer.GetLocalizedString("CancelOperationExplanation");
+            dialog.CloseButtonText = this._localizer.GetLocalizedString("PleaseWait");
         };
 
         int highestCompletedFileCount = 0;
@@ -273,7 +333,7 @@ public partial class HomeViewModel : ObservableObject
                     progressDialogViewModel.ProgressValue += progressValue;
                 }
 
-                if ((report.workerID, report.message) is ({ } workerId, { } message))
+                if ((report.workerID, report.message) is ({ } workerId, { } message) && message != "Done...")
                 {
                     progressDialogViewModel.UpdateWorkerStatus(workerId, message);
                 }
@@ -285,7 +345,7 @@ public partial class HomeViewModel : ObservableObject
                     double percent = (double)highestCompletedFileCount / totalFiles * 100;
                     progressDialogViewModel.ProgressSummary = string.Format(
                         CultureInfo.CurrentCulture,
-                        this._resourceLoader.GetString("CompressionProgressCounter"),
+                        this._localizer.GetLocalizedString("CompressionProgressCounter"),
                         highestCompletedFileCount,
                         totalFiles,
                         percent);
@@ -294,7 +354,23 @@ public partial class HomeViewModel : ObservableObject
 
         Compressor? compressor = null;
 
-        if (!Directory.Exists(this.FilePath) && ArchiveFactory.IsArchive(this.FilePath, out ArchiveType? isArchiveType))
+        if (this._selectedPdfPaths.Count > 0)
+        {
+            string[] selectedPdfPaths = [.. this._selectedPdfPaths];
+            compressor = new FileCompressor
+            {
+                InputFilesPath = selectedPdfPaths[0],
+                InputFilePaths = selectedPdfPaths,
+                NumOfThreads = int.Parse(this.ParallelismLevel),
+                ProgressHandler = progressHandler,
+                CompressImages = this.CompressImages,
+                CompressedSuffix = this.CompressedSuffix,
+                IgnoreCompressedFiles = this.IgnoreCompressedFiles,
+                DeleteOriginalFiles = this.DeleteOriginalFiles,
+                Ct = this._cts.Token
+            };
+        }
+        else if (!Directory.Exists(this.FilePath) && ArchiveFactory.IsArchive(this.FilePath, out ArchiveType? isArchiveType))
         {
             if (isArchiveType is not null)
             {
@@ -359,25 +435,39 @@ public partial class HomeViewModel : ObservableObject
             progressDialogViewModel.ReductionSize = FormatFileSize(Math.Abs(reduction));
             progressDialogViewModel.ReductionPercent = Math.Round(reductionPercent, 1);
             progressDialogViewModel.SizeSummaryVisible = true;
+
+            progressDialogViewModel.UpdateWorkerStatus(
+                0,
+                string.Format(
+                    CultureInfo.CurrentCulture,
+                    this._localizer.GetLocalizedString("CompressionDoneSummary"),
+                    progressDialogViewModel.BeforeSize,
+                    progressDialogViewModel.AfterSize,
+                    progressDialogViewModel.ReductionSize,
+                    progressDialogViewModel.ReductionPercent));
+        }
+        else
+        {
+            progressDialogViewModel.UpdateWorkerStatus(0, this._localizer.GetLocalizedString("CompressionDone"));
         }
 
-        dialog.PrimaryButtonText = this._resourceLoader.GetString("Finish");
+        dialog.PrimaryButtonText = this._localizer.GetLocalizedString("Finish");
         dialog.CloseButtonText = string.Empty;
         dialog.IsPrimaryButtonEnabled = true;
         progressDialogViewModel.ProgressValue = 100;
 
         if (!compressionResult.HasErrors)
         {
-            progressDialogViewModel.CurrentFileBeingCompressed = this._resourceLoader.GetString("Success");
+            progressDialogViewModel.CurrentFileBeingCompressed = this._localizer.GetLocalizedString("Success");
         }
         else
         {
             progressDialogViewModel.ShowError = true;
             progressDialogViewModel.ErrorList = compressionResult.Errors;
-            progressDialogViewModel.CurrentFileBeingCompressed = this._resourceLoader.GetString("Failure");
+            progressDialogViewModel.CurrentFileBeingCompressed = this._localizer.GetLocalizedString("Failure");
         }
 
-        this.FilePath = "";
+        this.SetFilePath(string.Empty);
     }
 
     private static string FormatFileSize(long sizeBytes)

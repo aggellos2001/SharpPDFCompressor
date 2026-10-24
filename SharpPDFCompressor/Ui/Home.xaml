@@ -6,6 +6,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ui="using:CommunityToolkit.WinUI"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:localizer="using:WinUI3Localizer"
     mc:Ignorable="d">
 
     <ScrollViewer HorizontalScrollBarVisibility="Disabled"
@@ -24,8 +25,8 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0" x:Uid="HomeTitle" FontSize="26" />
-            <TextBlock Grid.Row="1" x:Uid="HomeSubTitle" />
+            <TextBlock Grid.Row="0" localizer:Uids.Uid="HomeTitle" FontSize="26" />
+            <TextBlock Grid.Row="1" localizer:Uids.Uid="HomeSubTitle" />
 
             <Grid Grid.Row="2" HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
@@ -35,7 +36,7 @@
                 </Grid.ColumnDefinitions>
 
                 <TextBox Grid.Column="0"
-                         x:Uid="FilePathTextBox"
+                         localizer:Uids.Uid="FilePathTextBox"
                          MinHeight="50"
                          MaxHeight="100"
                          IsReadOnly="True"
@@ -54,7 +55,7 @@
                         VerticalAlignment="Top">
                     <StackPanel Orientation="Horizontal">
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xe8e5;" Margin="0,0,8,0" />
-                        <TextBlock x:Uid="PickFileButton" VerticalAlignment="Center" />
+                        <TextBlock localizer:Uids.Uid="PickFileButton" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
 
@@ -66,13 +67,13 @@
                         VerticalAlignment="Top">
                     <StackPanel Orientation="Horizontal">
                         <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xed25;" Margin="0,0,8,0" />
-                        <TextBlock x:Uid="PickFolderButton" VerticalAlignment="Center" />
+                        <TextBlock localizer:Uids.Uid="PickFolderButton" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </Grid>
 
             <StackPanel Grid.Row="4" Spacing="5" HorizontalAlignment="Stretch">
-                <controls:SettingsCard x:Uid="CompressImages"
+                <controls:SettingsCard localizer:Uids.Uid="CompressImages"
                                        HeaderIcon="{ui:FontIcon Glyph=&#xE8B9;}"
                                        HorizontalAlignment="Stretch">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.CompressImages, Mode=TwoWay}" />
@@ -84,16 +85,16 @@
                                        IsEnabled="{x:Bind ViewModel.EnabledDeleteOriginalFilesButton,Mode=OneWay}">
                     <ToggleSwitch IsOn="{x:Bind ViewModel.DeleteOriginalFiles, Mode=TwoWay}" />
                 </controls:SettingsCard>
-                <controls:SettingsExpander x:Uid="AdvancedSettingsExpander"
+                <controls:SettingsExpander localizer:Uids.Uid="AdvancedSettingsExpander"
                                            HeaderIcon="{ui:FontIcon Glyph=&#xE713;}"
                                            HorizontalAlignment="Stretch">
                     <controls:SettingsExpander.Items>
-                        <controls:SettingsCard x:Uid="IgnoreCompressedFilesCard"
+                        <controls:SettingsCard localizer:Uids.Uid="IgnoreCompressedFilesCard"
                                                HeaderIcon="{ui:FontIcon Glyph=&#xEB9D;}"
                                                HorizontalAlignment="Stretch">
                             <ToggleSwitch IsOn="{x:Bind ViewModel.IgnoreCompressedFiles, Mode=TwoWay}" />
                         </controls:SettingsCard>
-                        <controls:SettingsCard x:Uid="CompressedSuffixCard"
+                        <controls:SettingsCard localizer:Uids.Uid="CompressedSuffixCard"
                                                HeaderIcon="{ui:FontIcon Glyph=&#xE70F;}"
                                                HorizontalAlignment="Stretch">
                             <StackPanel Orientation="Horizontal" Spacing="4">
@@ -105,12 +106,11 @@
                                 </Button>
                             </StackPanel>
                         </controls:SettingsCard>
-                        <controls:SettingsCard x:Uid="ParallelismLevel"
+                        <controls:SettingsCard localizer:Uids.Uid="ParallelismLevel"
                                                HeaderIcon="{ui:FontIcon Glyph=&#xEC4A;}"
                                                HorizontalAlignment="Stretch">
                             <ComboBox SelectedValue="{x:Bind ViewModel.ParallelismLevel,Mode=TwoWay}"
-                                      SelectedValuePath="Content"
-                                      x:SuppressXamlTrimWarnings="True">
+                                      SelectedValuePath="Content">
                                 <ComboBoxItem Content="1" />
                                 <ComboBoxItem Content="2" />
                                 <ComboBoxItem Content="4" />
@@ -123,7 +123,7 @@
                 </controls:SettingsExpander>
             </StackPanel>
 
-            <Button Grid.Row="5" x:Uid="CompressButton" HorizontalAlignment="Center"
+            <Button Grid.Row="5" localizer:Uids.Uid="CompressButton" HorizontalAlignment="Center"
                     IsEnabled="{x:Bind ViewModel.CompressionButtonEnabled, Mode=OneWay}"
                     Command="{x:Bind ViewModel.CompressCommand}"
                     CommandParameter="{x:Bind XamlRoot}"
@@ -134,7 +134,7 @@
                     Style="{StaticResource AccentButtonStyle}">
                 <StackPanel Orientation="Horizontal">
                     <FontIcon Margin="00 0 10 0" FontFamily="Segoe Fluent Icons" Glyph="&#xf012;" />
-                    <TextBlock x:Uid="InnerCompressButton" />
+                    <TextBlock localizer:Uids.Uid="InnerCompressButton" />
                 </StackPanel>
             </Button>
 

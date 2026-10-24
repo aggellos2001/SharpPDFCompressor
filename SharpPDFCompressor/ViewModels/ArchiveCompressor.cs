@@ -1,5 +1,5 @@
 ﻿using SharpCompress.Common;
-using SharpCompress.Readers;
+using SharpCompress.Archives;
 using SharpCompress.Writers;
 using System;
 using System.Collections.Generic;
@@ -51,7 +51,7 @@ public class ArchiveCompressor : Compressor
         string? parentDir = Path.GetDirectoryName(this.InputFilesPath);
         if (parentDir is null)
         {
-            result.Errors.Add(this.ResourceLoader.GetString("GenericError"));
+            result.Errors.Add(this.LocalizedResources.GetLocalizedString("GenericError"));
             return result;
         }
 
@@ -64,20 +64,20 @@ public class ArchiveCompressor : Compressor
 
         try
         {
-            await using var reader = await ReaderFactory.OpenAsyncReader(this.InputFilesPath, null, this.Ct);
-            
-            while (await reader.MoveToNextEntryAsync(this.Ct))
+            await using var archive = await ArchiveFactory.OpenAsyncArchive(this.InputFilesPath, cancellationToken: this.Ct);
+
+            await foreach (var entry in archive.EntriesAsync)
             {
                 this.Ct.ThrowIfCancellationRequested();
 
-                if (reader.Entry.IsDirectory)
+                if (entry.IsDirectory)
                 {
                     continue;
                 }
 
-                this.ProgressHandler?.Report((null, 0, $"Extracting: {reader.Entry.Key}", null, null));
+                this.ProgressHandler?.Report((null, 0, $"Extracting: {entry.Key}", null, null));
 
-                string entryKey = reader.Entry.Key ?? string.Empty;
+                string entryKey = entry.Key ?? string.Empty;
                 string destPath = Path.Combine(zipExtractionDir, entryKey.Replace('/', Path.DirectorySeparatorChar));
                 string? destDir = Path.GetDirectoryName(destPath);
                 if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
@@ -93,7 +93,8 @@ public class ArchiveCompressor : Compressor
                     bufferSize: 81920,
                     useAsync: true);
 
-                await reader.WriteEntryToAsync(fileStream, this.Ct);
+                await using var entryStream = await entry.OpenEntryStreamAsync(this.Ct);
+                await entryStream.CopyToAsync(fileStream, this.Ct);
             }
         }
         catch (OperationCanceledException e)
@@ -153,7 +154,7 @@ public class ArchiveCompressor : Compressor
             string? resultDir = Path.GetDirectoryName(this.InputFilesPath);
             if (resultDir == null)
             {
-                result.Errors.Add(this.ResourceLoader.GetString("GenericError"));
+                result.Errors.Add(this.LocalizedResources.GetLocalizedString("GenericError"));
                 return result;
             }
 

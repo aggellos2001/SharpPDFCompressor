@@ -1,4 +1,3 @@
-using Microsoft.Windows.ApplicationModel.Resources;
 using MuPDF.NET;
 using SharpPDFCompressor.Utils;
 using System;
@@ -7,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
+using WinUI3Localizer;
 
 namespace SharpPDFCompressor.ViewModels;
 
@@ -23,7 +23,7 @@ public abstract class Compressor
     public const string DefaultCompressedSuffix = "_compressed";
 
     //private variables set by the compressor only
-    protected readonly ResourceLoader ResourceLoader = new();
+    protected readonly ILocalizer LocalizedResources = Localizer.Get();
     private BlockingCollection<int>? _availableStatusSlots;
 
     protected IEnumerable<string> Files { get; set; } = [];
@@ -95,6 +95,7 @@ public abstract class Compressor
         ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = this.NumOfThreads };
         ConcurrentBag<string> threadErrors = [];
         int completedFiles = 0;
+        long afterSizeBytes = 0;
 
         await Task.Run(() =>
         {
@@ -119,7 +120,7 @@ public abstract class Compressor
                     string? directoryName = Path.GetDirectoryName(file);
                     if (directoryName == null)
                     {
-                        threadErrors.Add(this.ResourceLoader.GetString("GenericError"));
+                        threadErrors.Add(this.LocalizedResources.GetLocalizedString("GenericError"));
                         return;
                     }
 
@@ -138,7 +139,7 @@ public abstract class Compressor
                     }
 
                     this.ProgressHandler?.Report((
-                        null, slotIndex, $"{this.ResourceLoader.GetString("Compressing")} {file}", null, null));
+                        null, slotIndex, $"{this.LocalizedResources.GetLocalizedString("Compressing")} {file}", null, null));
 
                     this.Ct.ThrowIfCancellationRequested();
                     Document document = new(file);
@@ -170,6 +171,7 @@ public abstract class Compressor
                     }
 
                     this.Ct.ThrowIfCancellationRequested();
+                    Interlocked.Add(ref afterSizeBytes, new System.IO.FileInfo(compressedFileName).Length);
                     this.PostFileCompress(file, compressedFileName);
                 }
                 catch (Exception exception)
@@ -197,6 +199,7 @@ public abstract class Compressor
             });
         }, this.Ct);
 
+        this.AfterSizeBytes = afterSizeBytes;
         return new CompressionResult { Errors = [.. threadErrors] };
     }
 }

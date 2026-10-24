@@ -2,7 +2,6 @@
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.Linq;
 using System.Threading.Tasks;
 using Windows.ApplicationModel.DataTransfer;
 
@@ -17,9 +16,12 @@ public partial class ProgressDialogViewModel : ObservableObject
     [ObservableProperty] public partial string? AfterSize { get; set; }
     [ObservableProperty] public partial string? ReductionSize { get; set; }
     [ObservableProperty] public partial double ReductionPercent { get; set; }
-    public string? ReductionPercentText => ReductionPercent != 0 ? $"{ReductionPercent:F1}%" : null;
+    public string? ReductionPercentText => this.ReductionPercent != 0 ? $"({this.ReductionPercent:F1}%)" : null;
 
-    partial void OnReductionPercentChanged(double value) => this.OnPropertyChanged(nameof(this.ReductionPercentText));
+    partial void OnReductionPercentChanged(double value)
+    {
+        this.OnPropertyChanged(nameof(this.ReductionPercentText));
+    }
 
     [ObservableProperty] public partial bool SizeSummaryVisible { get; set; }
     [ObservableProperty] public partial List<string>? ErrorList { get; set; }
@@ -30,19 +32,23 @@ public partial class ProgressDialogViewModel : ObservableObject
     [ObservableProperty] public partial bool TipShown { get; set; }
 
     public ObservableCollection<string> WorkerFileStatuses { get; } = new();
-    private readonly Dictionary<int, int> _workerStatusIndexes = [];
 
     public bool HasWorkerStatuses => this.WorkerFileStatuses.Count > 0;
 
     public Microsoft.UI.Xaml.Visibility WorkerFileStatusesVisibility =>
-        this.ShowError ? Microsoft.UI.Xaml.Visibility.Collapsed : (this.HasWorkerStatuses ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed);
+        this.ShowError ? Microsoft.UI.Xaml.Visibility.Collapsed :
+        this.HasWorkerStatuses ? Microsoft.UI.Xaml.Visibility.Visible : Microsoft.UI.Xaml.Visibility.Collapsed;
 
-    partial void OnShowErrorChanged(bool value) => this.OnPropertyChanged(nameof(this.WorkerFileStatusesVisibility));
-
-    private void OnWorkerStatusesChanged(object? sender, System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    partial void OnShowErrorChanged(bool value)
     {
-        OnPropertyChanged(nameof(this.HasWorkerStatuses));
-        OnPropertyChanged(nameof(this.WorkerFileStatusesVisibility));
+        this.OnPropertyChanged(nameof(this.WorkerFileStatusesVisibility));
+    }
+
+    private void OnWorkerStatusesChanged(object? sender,
+        System.Collections.Specialized.NotifyCollectionChangedEventArgs e)
+    {
+        this.OnPropertyChanged(nameof(this.HasWorkerStatuses));
+        this.OnPropertyChanged(nameof(this.WorkerFileStatusesVisibility));
     }
 
 
@@ -69,33 +75,10 @@ public partial class ProgressDialogViewModel : ObservableObject
         this.WorkerFileStatuses.CollectionChanged -= this.OnWorkerStatusesChanged;
         this.WorkerFileStatuses.CollectionChanged += this.OnWorkerStatusesChanged;
         this.WorkerFileStatuses.Clear();
-        this._workerStatusIndexes.Clear();
     }
 
     public void UpdateWorkerStatus(int workerId, string message)
     {
-        if (message == "Done...")
-        {
-            if (this._workerStatusIndexes.Remove(workerId, out int removedIndex))
-            {
-                this.WorkerFileStatuses.RemoveAt(removedIndex);
-                foreach (int workerIdToAdjust in this._workerStatusIndexes.Keys.ToArray())
-                {
-                    if (this._workerStatusIndexes[workerIdToAdjust] > removedIndex)
-                    {
-                        this._workerStatusIndexes[workerIdToAdjust]--;
-                    }
-                }
-            }
-        }
-        else if (this._workerStatusIndexes.TryGetValue(workerId, out int index))
-        {
-            this.WorkerFileStatuses[index] = message;
-        }
-        else
-        {
-            this._workerStatusIndexes[workerId] = this.WorkerFileStatuses.Count;
-            this.WorkerFileStatuses.Add(message);
-        }
+        this.WorkerFileStatuses.Add(message);
     }
 }

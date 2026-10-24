@@ -18,7 +18,6 @@ public class DirectoryCompressor : Compressor
         if (this.DeleteOriginalFiles)
         {
             string[] files = [.. Directory.EnumerateFiles(this.InputFilesPath, "*.*", SearchOption.AllDirectories)];
-            this.BeforeSizeBytes = GetFilesSize(files);
 
             string sourceRoot = this.InputFilesPath;
             AppUtils.GetTempDir(out string tempDir);
@@ -55,10 +54,12 @@ public class DirectoryCompressor : Compressor
         else
         {
             string[] files = [.. Directory.EnumerateFiles(this.InputFilesPath, "*.*", SearchOption.AllDirectories)];
-            this.BeforeSizeBytes = GetFilesSize(files);
             this.Files = [.. files.Where(file => IsPdf(file) && (!this.IgnoreCompressedFiles ||
                 !Path.GetFileNameWithoutExtension(file).Contains(this.CompressedSuffix, StringComparison.OrdinalIgnoreCase)))];
         }
+
+        // Calculate BeforeSizeBytes only from the PDF files that will be compressed
+        this.BeforeSizeBytes = GetFilesSize(this.Files);
 
         this.PdfFilesCount = this.Files.Count();
 
@@ -85,7 +86,6 @@ public class DirectoryCompressor : Compressor
 
         if (!this.DeleteOriginalFiles || this._tempFolderLocation == null)
         {
-            this.AfterSizeBytes = GetDirectorySize(this.InputFilesPath);
             return result;
         }
 
@@ -120,8 +120,6 @@ public class DirectoryCompressor : Compressor
                     File.Copy(file, targetFile, false);
                 });
             }, this.Ct);
-
-            this.AfterSizeBytes = GetDirectorySize(targetRootDirectory);
         }
         finally
         {

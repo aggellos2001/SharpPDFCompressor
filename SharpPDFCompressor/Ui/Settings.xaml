@@ -8,11 +8,14 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:SharpPDFCompressor.DataModels"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:localizer="using:WinUI3Localizer"
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
         <Grid Padding="20 0" HorizontalAlignment="Stretch" RowSpacing="10">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -25,7 +28,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Uid="SettingsTitle"
+                <TextBlock localizer:Uids.Uid="SettingsTitle"
                            FontSize="26"
                            Grid.Column="0"
                            VerticalAlignment="Center" />
@@ -33,17 +36,34 @@
                            Grid.Column="2"
                            VerticalAlignment="Center" />
             </Grid>
-            <controls:SettingsCard Grid.Row="1" x:Uid="ThemeSettingsCard">
+            <controls:SettingsCard Grid.Row="1" localizer:Uids.Uid="ThemeSettingsCard">
                 <ComboBox x:Name="ThemeComboBox"
                           SelectedIndex="0"
                           SelectionChanged="ThemeSelection_SelectionChanged">
-                    <ComboBoxItem x:Uid="ThemeSystemOption" Content="Use system setting" />
-                    <ComboBoxItem x:Uid="ThemeLightOption" Content="Light" />
-                    <ComboBoxItem x:Uid="ThemeDarkOption" Content="Dark" />
+                    <ComboBoxItem localizer:Uids.Uid="ThemeSystemOption" Content="Use system setting" />
+                    <ComboBoxItem localizer:Uids.Uid="ThemeLightOption" Content="Light" />
+                    <ComboBoxItem localizer:Uids.Uid="ThemeDarkOption" Content="Dark" />
                 </ComboBox>
             </controls:SettingsCard>
 
-            <controls:SettingsCard Grid.Row="2" x:Uid="GithubButton">
+            <controls:SettingsCard Grid.Row="2" localizer:Uids.Uid="LanguageSettingsCard">
+                <ComboBox x:Name="LanguageComboBox"
+                          SelectedIndex="0"
+                          SelectionChanged="LanguageSelection_SelectionChanged">
+                    <ComboBoxItem localizer:Uids.Uid="LanguageSystemOption" Content="Use Windows language" />
+                    <ComboBoxItem localizer:Uids.Uid="LanguageEnglishOption" Content="English" />
+                    <ComboBoxItem localizer:Uids.Uid="LanguageGreekOption" Content="Greek" />
+                </ComboBox>
+            </controls:SettingsCard>
+
+            <controls:SettingsCard Grid.Row="3" localizer:Uids.Uid="AppDataSettingsCard">
+                <Button Click="AppDataFolderButton_Click"
+                        localizer:Uids.Uid="OpenAppDataFolderButton">
+                    <TextBlock localizer:Uids.Uid="OpenAppDataFolderButtonText" />
+                </Button>
+            </controls:SettingsCard>
+
+            <controls:SettingsCard Grid.Row="4" localizer:Uids.Uid="GithubButton">
                 <Button Click="GitHubButtonOpenLink">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <Image Width="16" Height="16" VerticalAlignment="Center">
@@ -51,24 +71,24 @@
                                 <SvgImageSource UriSource="ms-appx:///Assets/GitHub_Invertocat_Black.svg" />
                             </Image.Source>
                         </Image>
-                        <TextBlock x:Uid="GithubLinkButton" VerticalAlignment="Center" />
+                        <TextBlock localizer:Uids.Uid="GithubLinkButton" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </controls:SettingsCard>
 
-            <controls:SettingsCard Grid.Row="3" x:Uid="LogoAttribution">
+            <controls:SettingsCard Grid.Row="5" localizer:Uids.Uid="LogoAttribution">
                 <Button Click="LogoLinkedInOpenLink">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <Image Source="ms-appx:///Assets/LI-In-Bug.png"
                                Width="16"
                                Height="16"
                                VerticalAlignment="Center" />
-                        <TextBlock x:Uid="LinkedInLinkButton" VerticalAlignment="Center" />
+                        <TextBlock localizer:Uids.Uid="LinkedInLinkButton" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </controls:SettingsCard>
 
-            <controls:SettingsExpander Grid.Row="4" x:Uid="LicenseExpander"
+            <controls:SettingsExpander Grid.Row="6" localizer:Uids.Uid="LicenseExpander"
                                        HorizontalAlignment="Stretch"
                                        ItemsSource="{x:Bind ViewModel.Licenses, Mode=OneWay}">
                 <controls:SettingsExpander.ItemTemplate>

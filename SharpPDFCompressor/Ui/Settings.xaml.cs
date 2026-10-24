@@ -13,6 +13,8 @@ public sealed partial class Settings : Page
 {
     private bool _isThemeSelectorInitialized;
     private bool _isUpdatingThemeSelector;
+    private bool _isLanguageSelectorInitialized;
+    private bool _isUpdatingLanguageSelector;
     public Settings()
     {
         this.InitializeComponent();
@@ -28,9 +30,11 @@ public sealed partial class Settings : Page
         if (App.MainWindow is MainWindow mainWindow)
         {
             this.UpdateThemeSelection(mainWindow.CurrentTheme);
+            this.UpdateLanguageSelection(App.Settings.Language, mainWindow.CurrentLanguage);
         }
 
         this._isThemeSelectorInitialized = true;
+        this._isLanguageSelectorInitialized = true;
     }
 
     internal void UpdateThemeSelection(MainWindow.AppTheme theme)
@@ -56,6 +60,40 @@ public sealed partial class Settings : Page
                 mainWindow.ApplyTheme(selectedTheme);
             }
         }
+    }
+
+    internal void UpdateLanguageSelection(LanguagePreference preference, MainWindow.AppLanguage language)
+    {
+        this._isUpdatingLanguageSelector = true;
+        this.LanguageComboBox.SelectedIndex = (int)preference;
+        this._isUpdatingLanguageSelector = false;
+    }
+
+    private async void LanguageSelection_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        if (!this._isLanguageSelectorInitialized || this._isUpdatingLanguageSelector ||
+            this.LanguageComboBox.SelectedIndex is < 0 or > 2)
+        {
+            return;
+        }
+
+        if (App.MainWindow is MainWindow mainWindow)
+        {
+            if (this.LanguageComboBox.SelectedIndex == 0)
+            {
+                await mainWindow.ApplySystemLanguage();
+            }
+            else
+            {
+                await mainWindow.ApplyLanguage((MainWindow.AppLanguage)(this.LanguageComboBox.SelectedIndex - 1));
+            }
+        }
+    }
+
+    private async void AppDataFolderButton_Click(object sender, RoutedEventArgs e)
+    {
+        AppSettingsStore.EnsureAppDataFolderExists();
+        await Launcher.LaunchFolderPathAsync(AppSettingsStore.AppDataFolderPath);
     }
 
     private async void Settings_Loaded(object sender, RoutedEventArgs e)

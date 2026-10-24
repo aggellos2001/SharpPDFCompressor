@@ -7,7 +7,8 @@ namespace SharpPDFCompressor.DataModels;
 
 [JsonSerializable(typeof(PackageLicense))]
 [JsonSerializable(typeof(List<PackageLicense>))]
-public partial class SettingsJsonContext : JsonSerializerContext
+[JsonSerializable(typeof(AppSettings))]
+internal partial class SettingsJsonContext : JsonSerializerContext
 {
 }
 

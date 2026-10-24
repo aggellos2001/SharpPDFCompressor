@@ -1,4 +1,4 @@
-﻿using Microsoft.Windows.ApplicationModel.Resources;
+﻿using WinUI3Localizer;
 using System;
 using System.IO;
 using Windows.Storage;
@@ -7,7 +7,7 @@ namespace SharpPDFCompressor.Utils;
 
 public static class AppUtils
 {
-    private static readonly ResourceLoader ResourceLoader = new();
+    private static readonly ILocalizer LocalizedResources = Localizer.Get();
 
     private static bool IsLongPathSupported()
     {
@@ -46,7 +46,7 @@ public static class AppUtils
         int availableNameLength = maxPathLength - fixedLength;
         if (availableNameLength <= 0)
         {
-            throw new PathTooLongException(ResourceLoader.GetString("LongNameException") + "Filename:  " +
+            throw new PathTooLongException(LocalizedResources.GetLocalizedString("LongNameException") + "Filename:  " +
                                            fullPath);
         }
 

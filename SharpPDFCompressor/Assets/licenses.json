@@ -108,6 +108,17 @@
     "LicenseInformationOrigin": 0
   },
   {
+    "PackageId": "WinUI3Localizer",
+    "PackageVersion": "2.3.0",
+    "PackageProjectUrl": "https://github.com/AndrewKeepCoding/WinUI3Localizer",
+    "Copyright": "Copyright (c) Andrew KeepCoding 2025",
+    "Authors": "Andrew KeepCoding",
+    "Description": "WinUI3Localizer is a NuGet package that helps you localize your WinUI 3 app.\n      - Switch languages without restarting\n      - You/users can edit localized strings even after deployment\n      - You/users can add new languages even after deployment\n      - Use standard Resources.resw",
+    "License": "MIT",
+    "LicenseUrl": "https://licenses.nuget.org/MIT",
+    "LicenseInformationOrigin": 0
+  },
+  {
     "PackageId": "WinUIEx",
     "PackageVersion": "2.9.3",
     "PackageProjectUrl": "https://dotmorten.github.io/WinUIEx",
