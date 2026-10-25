@@ -1,8 +1,16 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
 namespace SharpPDFCompressor.DataModels;
+
+[JsonSerializable(typeof(PackageLicense))]
+[JsonSerializable(typeof(List<PackageLicense>))]
+[JsonSerializable(typeof(AppSettings))]
+internal partial class SettingsJsonContext : JsonSerializerContext
+{
+}
 
 public class PackageLicense
 {
@@ -23,18 +31,26 @@ public class PackageLicense
     {
         get
         {
-            if (string.IsNullOrWhiteSpace(License)) return "Unknown License";
+            if (string.IsNullOrWhiteSpace(this.License))
+            {
+                return "Unknown License";
+            }
 
             // 1. If it's already a short identifier like "MIT"
-            if (License.Length < 50 && !License.Contains('\n'))
-                return License;
+            if (this.License.Length < 50 && !this.License.Contains('\n'))
+            {
+                return this.License;
+            }
 
             // 2. If the tool output a URL instead of text
-            if (License.StartsWith("http"))
+            if (this.License.StartsWith("http"))
+            {
                 return "Custom (See URL)";
+            }
 
             // 3. If it is a giant block of text, grab the first non-empty line
-            string? firstLine = License.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).FirstOrDefault();
+            string? firstLine = this.License.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries)
+                .FirstOrDefault();
 
             // Trim it with an ellipsis if that first line is still too long
             if (firstLine is { Length: > 50 })
@@ -45,17 +61,31 @@ public class PackageLicense
             return firstLine ?? "Custom License";
         }
     }
+
+    [JsonIgnore]
+    public string? VersionWithLicense
+    {
+        get
+        {
+            string version = string.IsNullOrWhiteSpace(this.PackageVersion) ? "" : this.PackageVersion;
+            string license = this.DisplayLicense;
+            return $"{version} - Licensed under: {license}";
+        }
+    }
+
     [JsonIgnore]
     public string? ActionableUrl
     {
         get
         {
-            if (string.IsNullOrWhiteSpace(LicenseUrl) ||
-                LicenseUrl.Contains("deprecateLicenseUrl", StringComparison.OrdinalIgnoreCase))
+            if (!string.IsNullOrWhiteSpace(this.PackageProjectUrl))
             {
-                return PackageProjectUrl;
+                return this.PackageProjectUrl;
             }
-            return LicenseUrl;
+
+            return string.IsNullOrWhiteSpace(this.PackageId)
+                ? null
+                : $"https://www.nuget.org/packages/{Uri.EscapeDataString(this.PackageId)}";
         }
     }
 }

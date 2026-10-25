@@ -22,33 +22,8 @@
     "LicenseInformationOrigin": 0
   },
   {
-    "PackageId": "Ghostscript.NET",
-    "PackageVersion": "1.3.3",
-    "PackageProjectUrl": "https://github.com/ArtifexSoftware/Ghostscript.NET",
-    "Copyright": "Artifex Software Inc.",
-    "Authors": "Artifex Software Inc.",
-    "Description": "A C# binding for Ghostscript library",
-    "ValidationErrors": [
-      {
-        "Error": "Unable to determine license from the given license file",
-        "Context": "C:\\Users\\aggel\\DotNetProjects\\SharpPDFCompressor\\SharpPDFCompressor\\SharpPDFCompressor.csproj"
-      },
-      {
-        "Error": "Unable to determine license from the given license file",
-        "Context": "C:\\Users\\aggel\\DotNetProjects\\SharpPDFCompressor\\SharpPDFCompressor\\SharpPDFCompressor.csproj"
-      },
-      {
-        "Error": "Unable to determine license from the given license file",
-        "Context": "C:\\Users\\aggel\\DotNetProjects\\SharpPDFCompressor\\SharpPDFCompressor\\SharpPDFCompressor.csproj"
-      }
-    ],
-    "License": "# License and Copyright\r\n\r\nAvailable under both, open-source AGPL and commercial license agreements.\r\n\r\nPlease read the full text of the [AGPL license agreement](https://www.gnu.org/licenses/agpl-3.0.html) (which is also included here in file COPYING) to ensure that your use case complies with the guidelines of this license. If you determine you cannot meet the requirements of the AGPL, please [contact Artifex](https://artifex.com/contact/ghostscript) for more information regarding a commercial license.\r\n\r\n[Artifex](https://artifex.com) is the exclusive commercial licensing agent for Ghostscript.\r\n\r\n\r\n\r\n",
-    "LicenseUrl": "https://aka.ms/deprecateLicenseUrl",
-    "LicenseInformationOrigin": 5
-  },
-  {
     "PackageId": "Microsoft.Windows.SDK.BuildTools",
-    "PackageVersion": "10.0.28000.2270",
+    "PackageVersion": "10.0.28000.2705",
     "PackageProjectUrl": "https://aka.ms/WinSDKProjectURL",
     "Copyright": "\u00A9 Microsoft Corporation. All rights reserved.",
     "Authors": "Microsoft",
@@ -60,7 +35,7 @@
   },
   {
     "PackageId": "Microsoft.WindowsAppSDK",
-    "PackageVersion": "2.2.0",
+    "PackageVersion": "2.5.1",
     "PackageProjectUrl": "https://github.com/microsoft/windowsappsdk",
     "Copyright": "\u00A9 Microsoft Corporation. All rights reserved.",
     "Authors": "Microsoft",
@@ -84,8 +59,32 @@
     "LicenseInformationOrigin": 5
   },
   {
+    "PackageId": "MuPDF.NET",
+    "PackageVersion": "3.28.2.4",
+    "PackageProjectUrl": "https://github.com/ArtifexSoftware/MuPDF.NET",
+    "Authors": "Artifex Software Inc.",
+    "Description": "A C# binding for MuPDF.",
+    "ValidationErrors": [
+      {
+        "Error": "Unable to determine license from the given license file",
+        "Context": "C:\\Users\\aggel\\DotNetProjects\\SharpPDFCompressor\\SharpPDFCompressor\\SharpPDFCompressor.csproj"
+      },
+      {
+        "Error": "Unable to determine license from the given license file",
+        "Context": "C:\\Users\\aggel\\DotNetProjects\\SharpPDFCompressor\\SharpPDFCompressor\\SharpPDFCompressor.csproj"
+      },
+      {
+        "Error": "Unable to determine license from the given license file",
+        "Context": "C:\\Users\\aggel\\DotNetProjects\\SharpPDFCompressor\\SharpPDFCompressor\\SharpPDFCompressor.csproj"
+      }
+    ],
+    "License": "# ARTIFEX COMMUNITY LICENSE\r\n\r\n**Version 1, 11th December 2024**\r\n\r\nThis **Artifex Community License** (\u0022License\u0022) governs the use, reproduction, and distribution of **MuPDF.NET** (\u0022Software\u0022) for non-commercial use. By using, modifying, or distributing this Software, you accept the terms of this License.\r\n\r\nYou may not use the software without an appropriate license, so if you cannot abide by all the terms of this license, you must [contact the Licensor](https://artifex.com/contact) to discuss obtaining a **Commercial Use License**.\r\n\r\n## 1. Definitions\r\n\r\n- **Commercial Use**: Any use of the Software for commercial purposes, including, but not limited to, use as part of, or in any workflow in support of, a product, service, or platform that directly or indirectly generates revenue.\r\n- **Non-Commercial Use**: Any use of the software that does not fall into the **Commercial Use** category, such as for personal, or educational purposes.\r\n- **Licensor**: Artifex Software, Inc.\r\n- **You**: Any individual or entity using the Software.\r\n\r\n## 2. Grant of License\r\n\r\n1. **Non-Commercial Use**:\r\n\t- You are granted a royalty-free, perpetual, non-exclusive license to use, modify, and distribute the Software for Non-Commercial Use, subject to the terms of this License.\r\n2. **Commercial Use**:\r\n\t- This license does not cover Commercial Use.\r\n\t- If you intend to use the Software for Commercial Use you are required to obtain a Commercial Use License - [contact the Licensor](https://artifex.com/contact) to negotiate a Commercial Use License.\r\n\r\n## 3. Permitted Uses\r\n\r\n1. You may:\r\n\t- Access and modify the Software\u2019s source code.\r\n\t- Use the Software for any lawful purpose, subject to the limitations outlined in Section 2.\r\n\t- Combine the Software with other works, provided that any distribution complies with this License.\r\n\t- Distribute unmodified source code. \r\n\r\n## 4. Restrictions\r\n\r\n1. You may not:\r\n\t- Use the Software for any Commercial Use. If Commercial Use is required [contact the Licensor](https://artifex.com/contact) to negotiate a Commercial Use License.\r\n\t- Remove or obscure any copyright, trademark, or attribution notices included in the Software.\r\n\t- Distribute modified versions of the source code.\r\n\r\n2. Derivative works must include prominent attribution to the original Software and a copy of this License.\r\n\r\n## 5. Attribution\r\n\r\nAll distributions of the Software, whether modified or unmodified, must include:\r\n- A prominent notice stating: *\u0022This software is based on MuPDF.NET, developed by Artifex Software, Inc. and licensed under the Artifex Community License.\u0022*\r\n- A copy of this License.\r\n\r\n## 6. Disclaimer of Warranty\r\n\r\nTHE SOFTWARE IS PROVIDED \u0022AS IS,\u0022 WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT, OR OTHERWISE, ARISING FROM, OUT OF, OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.\r\n\r\n## 7. Limitation of Liability\r\n\r\nIN NO EVENT SHALL THE LICENSOR BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THE SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.\r\n\r\n## 8. Termination\r\n\r\n1. This License is effective until terminated.\r\n2. Your rights under this License will terminate automatically if you breach any of its terms. Upon termination, you must cease all use of the Software and destroy all copies in your possession.\r\n\r\n\r\n",
+    "LicenseUrl": "https://aka.ms/deprecateLicenseUrl",
+    "LicenseInformationOrigin": 5
+  },
+  {
     "PackageId": "SharpCompress",
-    "PackageVersion": "0.50.0",
+    "PackageVersion": "0.50.7",
     "PackageProjectUrl": "https://github.com/adamhathcock/sharpcompress",
     "Copyright": "Copyright (c) 2025  Adam Hathcock",
     "Authors": "Adam Hathcock",
@@ -95,8 +94,19 @@
     "LicenseInformationOrigin": 0
   },
   {
+    "PackageId": "WinUI3Localizer",
+    "PackageVersion": "2.3.0",
+    "PackageProjectUrl": "https://github.com/AndrewKeepCoding/WinUI3Localizer",
+    "Copyright": "Copyright (c) Andrew KeepCoding 2025",
+    "Authors": "Andrew KeepCoding",
+    "Description": "WinUI3Localizer is a NuGet package that helps you localize your WinUI 3 app.\n      - Switch languages without restarting\n      - You/users can edit localized strings even after deployment\n      - You/users can add new languages even after deployment\n      - Use standard Resources.resw",
+    "License": "MIT",
+    "LicenseUrl": "https://licenses.nuget.org/MIT",
+    "LicenseInformationOrigin": 0
+  },
+  {
     "PackageId": "WinUIEx",
-    "PackageVersion": "2.9.2",
+    "PackageVersion": "2.9.3",
     "PackageProjectUrl": "https://dotmorten.github.io/WinUIEx",
     "Copyright": "Copyright \u00A9 2021-2026 - Morten Nielsen",
     "Authors": "Morten Nielsen - https://xaml.dev",

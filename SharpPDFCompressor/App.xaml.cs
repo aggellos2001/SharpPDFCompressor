@@ -1,25 +1,35 @@
 ﻿using Microsoft.UI.Xaml;
+using SharpPDFCompressor.DataModels;
+using System;
+using System.IO;
+using WinUI3Localizer;
 
 namespace SharpPDFCompressor;
 
 public partial class App : Application
 {
-    public static Window? MainWindow { get; private set; }
-
     private Window? _window;
 
     public App()
     {
-#if DEBUG
-        //Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "el-GR";
-        Microsoft.Windows.Globalization.ApplicationLanguages.PrimaryLanguageOverride = "en-US";
-#endif
-        InitializeComponent();
+        this.InitializeComponent();
     }
 
-    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    public static Window? MainWindow { get; private set; }
+    internal static AppSettings Settings { get; private set; } = new();
+
+    protected override async void OnLaunched(LaunchActivatedEventArgs args)
     {
-        _window = new MainWindow();
-        MainWindow = _window;
+        Settings = AppSettingsStore.Load();
+        await new LocalizerBuilder()
+            .AddStringResourcesFolderForLanguageDictionaries(Path.Combine(AppContext.BaseDirectory, "Strings"))
+            .SetOptions(options => options.DefaultLanguage = Settings.ResolvedLanguage == LanguagePreference.Greek
+                ? "el-GR"
+                : "en-US")
+            .Build();
+
+        this._window = new MainWindow();
+        MainWindow = this._window;
+        this._window.Activate();
     }
 }

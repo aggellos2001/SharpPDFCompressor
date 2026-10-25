@@ -123,15 +123,6 @@
   <data name="HomeTitle.Text" xml:space="preserve">
     <value>Αρχική</value>
   </data>
-  <data name="LowCompressionButton.Content" xml:space="preserve">
-    <value>Χαμηλή</value>
-  </data>
-  <data name="MaxCompressionButton.Content" xml:space="preserve">
-    <value>Μέγιστη (δεν συνίσταται)</value>
-  </data>
-  <data name="MediumCompressionButton.Content" xml:space="preserve">
-    <value>Μέτρια</value>
-  </data>
   <data name="PickFileButton.Text" xml:space="preserve">
     <value>Επιλέξτε ένα αρχείο</value>
   </data>
@@ -139,17 +130,10 @@
     <value>Επιλέξτε ένα φάκελο</value>
   </data>
   <data name="HomeSubTitle.Text" xml:space="preserve">
-    <value>Μπορείτε να συμπιέσετε ένα αρχείο .pdf ή όλα τα αρχεία που συμπεριλαμβάνονται σε ένα φάκελο και τους υποφακέλους.
-Μπορείτε επίσης να συμπιέσετε όλα τα .pdf αρχεία που βρίσκονται μέσα σε συμπιεσμένα αρχεία (.zip, .tar.gz κλπ)</value>
-  </data>
-  <data name="HighCompressionButton.Content" xml:space="preserve">
-    <value>Υψηλή</value>
+    <value>Μπορείτε να συμπιέσετε ένα αρχείο PDF, όλα τα αρχεία PDF σε ένα φάκελο και τους υποφακέλους του ή όλα τα PDF αρχεία που βρίσκονται μέσα σε συμπιεσμένα αρχεία (.zip, .tar.gz κ.λ.π.)</value>
   </data>
   <data name="InnerCompressButton.Text" xml:space="preserve">
     <value>Συμπίεση</value>
-  </data>
-  <data name="CompressionLevelGroup.Header" xml:space="preserve">
-    <value>Επίπεδο συμπίεσης</value>
   </data>
   <data name="HomePageButton.Content" xml:space="preserve">
     <value>Αρχική</value>
@@ -162,6 +146,24 @@
   </data>
   <data name="Compressing" xml:space="preserve">
     <value>Συμπίεση</value>
+  </data>
+  <data name="CompressionProgressCounter" xml:space="preserve">
+    <value>Συμπίεση {0}/{1} αρχείων ({2:0}%).</value>
+  </data>
+  <data name="CompressionSizeSummary" xml:space="preserve">
+    <value>Πριν: {0}  Μετά: {1}  Μείωση: {2} - {3:0.#}%</value>
+  </data>
+  <data name="SizeSummaryInfoBar.Title" xml:space="preserve">
+    <value>Αποτελέσματα συμπίεσης</value>
+  </data>
+  <data name="SizeBeforeLabel.Text" xml:space="preserve">
+    <value>Πριν</value>
+  </data>
+  <data name="SizeAfterLabel.Text" xml:space="preserve">
+    <value>Μετά</value>
+  </data>
+  <data name="SizeReducedByLabel.Text" xml:space="preserve">
+    <value>Μείωση κατά</value>
   </data>
   <data name="Success" xml:space="preserve">
     <value>Επιτυχία</value>
@@ -179,39 +181,58 @@
     <value>Το μήνυμα σφάλματος αντιγράφηκε στο πρόχειρο επιτυχώς.</value>
   </data>
   <data name="SettingsTitle.Text" xml:space="preserve">
-    <value>Σχετικά με</value>
+    <value>Ρυθμίσεις</value>
   </data>
   <data name="InvalidFileException" xml:space="preserve">
     <value>Το αρχείο που επιλέξατε δεν είναι pdf ή δεν υπάρχει.</value>
   </data>
-  <data name="CompressionLevelGroup.Description" xml:space="preserve">
-    <value>Επιλέξτε μεταξύ τεσσάρων επιπέδων συμπίεσης</value>
+  <data name="CompressedSuffixCard.Header" xml:space="preserve">
+    <value>Επίθημα συμπιεσμένου αρχείου</value>
   </data>
-  <data name="DeleteOriginalFilesSwitch.Header" xml:space="preserve">
+  <data name="CompressedSuffixCard.Description" xml:space="preserve">
+    <value>Αυτό το επίθημα προστίθεται στα ονόματα των συμπιεσμένων PDF.</value>
+  </data>
+  <data name="IgnoreCompressedFilesCard.Header" xml:space="preserve">
+    <value>Παράλειψη ήδη συμπιεσμένων αρχείων</value>
+  </data>
+  <data name="IgnoreCompressedFilesCard.Description" xml:space="preserve">
+    <value>Παραλείπει PDF των οποίων τα ονόματα περιέχουν ήδη το επίθημα συμπίεσης.</value>
+  </data>
+  <data name="DeleteOriginalCardHeader" xml:space="preserve">
     <value>Διαγραφή των αρχικών .pdf αρχείων</value>
   </data>
-  <data name="DeleteOriginalFilesSwitch.Description" xml:space="preserve">
-    <value>Όταν είναι ενεργή η επιλογή, όλα τα αρχικά .pdf αρχεία διαγράφονται. Αυτό δεν ισχύει στα συμπιεσμένα αρχεία καθώς κάθε φορά δημιουργείται ένα νέο αντίγραφο.</value>
+  <data name="DeleteOriginalCardDescription" xml:space="preserve">
+    <value>Όταν είναι ενεργή η επιλογή, όλα τα αρχικά .pdf αρχεία διαγράφονται.</value>
+  </data>
+  <data name="CreateNewFolderCardHeader" xml:space="preserve">
+    <value>Συμπίεση σε νέο φάκελο</value>
+  </data>
+  <data name="CreateNewFolderCardDescription" xml:space="preserve">
+    <value>Όταν είναι ενεργή η επιλογή, τα συμπιεσμένα αρχεία δημιουργούνται σε έναν νέο φάκελο στην ίδια διαδρομή με τον φάκελο που επιλέξατε για συμπίεση.</value>
+  </data>
+  <data name="CompressImages.Header" xml:space="preserve">
+    <value>Συμπίεση εικόνων</value>
+  </data>
+  <data name="CompressImages.Description" xml:space="preserve">
+    <value>Όταν είναι ενεργή η επιλογή, οι εικόνες στα PDF συμπιέζονται ξανά για μείωση του μεγέθους.</value>
   </data>
   <data name="GenericError" xml:space="preserve">
     <value>Προέκυψε ένα μη αναμενόμενο σφάλμα. Αν αυτό συνεχιστεί ενημερώστε τον προγραμματιστή!</value>
   </data>
   <data name="LicenseExpander.Header" xml:space="preserve">
-    <value>Δείτε τις άδειες λογισμικού των βιβλιοθηκών που χρησιμοποιήθηκαν</value>
+    <value>Βιβλιοθήκες ανοιχτού κώδικα και άδειες χρήσης</value>
   </data>
   <data name="GithubButton.Header" xml:space="preserve">
     <value>Πηγαίος κώδικας</value>
   </data>
   <data name="GithubButton.Description" xml:space="preserve">
-    <value>Αυτή η εφαρμογή χρησιμοποιεί βιβλιοθήκες ανοιχτού κώδικα όπως το ghostscript για να παρέχει μέρος των δυνατοτήτων της όπως η συμπίεση PDF αρχείων.
-Κάθε είδους συνεισφορά είναι ευπρόσδεκτη. 
-Μπορείτε να δείτε τον πηγαίο κώδικα στο GitHub.</value>
+    <value>Το SharpPDFCompressor χρησιμοποιεί βιβλιοθήκες ανοιχτού κώδικα, όπως το MuPDF.NET, για τη συμπίεση PDF. Δείτε τον πηγαίο κώδικα ή συνεισφέρετε στο GitHub.</value>
   </data>
   <data name="LogoAttribution.Header" xml:space="preserve">
     <value>Εικονίδιο εφαρμογής</value>
   </data>
   <data name="LogoAttribution.Description" xml:space="preserve">
-    <value>Ευχαριστώ τον φίλο μου Απόστολο Πασχάλη για την δημιουργία του εικονιδίου της εφαρμογής. Μπορείτε να επισκεφτείτε το LinkedIn προφίλ του για περισσότερες πληροφορίες.</value>
+    <value>Ευχαριστούμε τον Απόστολο Πασχάλη για τη δημιουργία του εικονιδίου της εφαρμογής. Δείτε το προφίλ του στο LinkedIn.</value>
   </data>
   <data name="CancelOperation" xml:space="preserve">
     <value>Ακύρωση συμπίεσης...</value>
@@ -233,5 +254,134 @@
   </data>
   <data name="LongNameException" xml:space="preserve">
     <value>Η διαδρομή του αρχείου ξεπερνάει το όριο των 250 χαρακτήρων. Μειώστε τα ονόματα των φακέλων και των αρχείων και δοκιμάστε ξανά.</value>
+  </data>
+  <data name="ThemeSettingsCard.Header" xml:space="preserve">
+    <value>Θέμα εφαρμογής</value>
+  </data>
+  <data name="ThemeSettingsCard.Description" xml:space="preserve">
+    <value>Επιλέξτε αν η εφαρμογή θα ακολουθεί το θέμα του συστήματος ή θα χρησιμοποιεί φωτεινή ή σκοτεινή λειτουργία.</value>
+  </data>
+  <data name="LanguageSettingsCard.Header" xml:space="preserve">
+    <value>Γλώσσα εφαρμογής</value>
+  </data>
+  <data name="LanguageSettingsCard.Description" xml:space="preserve">
+    <value>Ακολουθήστε τη γλώσσα των Windows ή επιλέξτε ελληνικά ή αγγλικά.</value>
+  </data>
+  <data name="AppDataSettingsCard.Header" xml:space="preserve">
+    <value>Δεδομένα εφαρμογής</value>
+  </data>
+  <data name="AppDataSettingsCard.Description" xml:space="preserve">
+    <value>Ανοίξτε τον φάκελο όπου η εφαρμογή αποθηκεύει τα τοπικά δεδομένα της.</value>
+  </data>
+  <data name="OpenAppDataFolderButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Άνοιγμα φακέλου δεδομένων εφαρμογής</value>
+  </data>
+  <data name="OpenAppDataFolderButtonText.Text" xml:space="preserve">
+    <value>Άνοιγμα φακέλου δεδομένων εφαρμογής</value>
+  </data>
+  <data name="LanguageSystemOption.Content" xml:space="preserve">
+    <value>Χρήση γλώσσας Windows</value>
+  </data>
+  <data name="LanguageEnglishOption.Content" xml:space="preserve">
+    <value>Αγγλικά</value>
+  </data>
+  <data name="LanguageGreekOption.Content" xml:space="preserve">
+    <value>Ελληνικά</value>
+  </data>
+  <data name="LanguageToggleSideButton.Content" xml:space="preserve">
+    <value>Γλώσσα</value>
+  </data>
+  <data name="LanguageToggleAutoTooltip" xml:space="preserve">
+    <value>Γλώσσα: Ακολουθήστε τα Windows ({0})</value>
+  </data>
+  <data name="LanguageToggleEnglishTooltip" xml:space="preserve">
+    <value>Γλώσσα: Αγγλικά</value>
+  </data>
+  <data name="LanguageToggleGreekTooltip" xml:space="preserve">
+    <value>Γλώσσα: Ελληνικά</value>
+  </data>
+  <data name="ThemeToggleSideButton.Content" xml:space="preserve">
+    <value>Θέμα</value>
+  </data>
+  <data name="ThemeSystemOption.Content" xml:space="preserve">
+    <value>Χρήση ρύθμισης συστήματος</value>
+  </data>
+  <data name="ThemeLightOption.Content" xml:space="preserve">
+    <value>Ανοιχτό</value>
+  </data>
+  <data name="ThemeDarkOption.Content" xml:space="preserve">
+    <value>Σκοτεινό</value>
+  </data>
+  <data name="GithubLinkButton.Text" xml:space="preserve">
+    <value>Προβολή πηγαίου κώδικα στο GitHub</value>
+  </data>
+  <data name="LinkedInLinkButton.Text" xml:space="preserve">
+    <value>Προβολή προφίλ</value>
+  </data>
+  <data name="AdvancedSettingsExpander.Header" xml:space="preserve">
+    <value>Προηγμένες ρυθμίσεις</value>
+  </data>
+  <data name="WorkerProgressExpander.Header" xml:space="preserve">
+    <value>Καταγραφή συμπίεσης</value>
+  </data>
+  <data name="WorkerProgressExpander.Description" xml:space="preserve">
+    <value>Ζωντανή καταγραφή των αρχείων που συμπιέζονται από τις διεργασίες.</value>
+  </data>
+  <data name="CompressionDone" xml:space="preserve">
+    <value>Ολοκληρώθηκε.</value>
+  </data>
+  <data name="CompressionDoneSummary" xml:space="preserve">
+    <value>Ολοκληρώθηκε — Πριν: {0}; Μετά: {1}; Μείωση: {2} ({3:0.0}%).</value>
+  </data>
+  <data name="UpdateCheckCard.Header" xml:space="preserve">
+    <value>Ενημερώσεις</value>
+  </data>
+  <data name="UpdateCheckCard.Description" xml:space="preserve">
+    <value>Ελέγξτε αν υπάρχει νέα έκδοση της εφαρμογής στο Microsoft Store.</value>
+  </data>
+  <data name="CheckForUpdatesButtonText.Text" xml:space="preserve">
+    <value>Έλεγχος ενημερώσεων</value>
+  </data>
+  <data name="UpdateAvailableTitle" xml:space="preserve">
+    <value>Διαθέσιμη ενημέρωση</value>
+  </data>
+  <data name="UpdateAvailableMessage" xml:space="preserve">
+    <value>Διαθέσιμη είναι νέα έκδοση του SharpPDFCompressor. Θέλετε να ενημερώσετε τώρα;</value>
+  </data>
+  <data name="UpdateNowButton" xml:space="preserve">
+    <value>Ενημέρωση τώρα</value>
+  </data>
+  <data name="DismissButton" xml:space="preserve">
+    <value>Απόρριψη</value>
+  </data>
+  <data name="UpToDateTitle" xml:space="preserve">
+    <value>Ενημερωμένη έκδοση</value>
+  </data>
+  <data name="UpToDateMessage" xml:space="preserve">
+    <value>Η εφαρμογή σας είναι ήδη ενημερωμένη. Δεν υπάρχουν νέες ενημερώσεις.</value>
+  </data>
+  <data name="UpdateCheckErrorTitle" xml:space="preserve">
+    <value>Αποτυχία ελέγχου ενημερώσεων</value>
+  </data>
+  <data name="UpdateCheckErrorMessage" xml:space="preserve">
+    <value>Δεν ήταν δυνατός ο έλεγχος ενημερώσεων. Βεβαιωθείτε ότι είστε συνδεδεμένοι στο διαδίκτυο και προσπαθήστε ξανά. Σημείωση: οι έλεγχοι ενημερώσεων περιορίζονται σε μία φορά κάθε 30 λεπτά.</value>
+  </data>
+  <data name="OkButton" xml:space="preserve">
+    <value>Εντάξει</value>
+  </data>
+  <data name="MaxDecompressedSizeCard.Header" xml:space="preserve">
+    <value>Μέγιστο μέγεθος αποσυμπίεσης</value>
+  </data>
+  <data name="MaxDecompressedSizeCard.Description" xml:space="preserve">
+    <value>Μέγιστο συνολικό μέγεθος αποσυμπίεσης αρχείου σε MB. Προστατεύει από επιθέσεις zip bomb.</value>
+  </data>
+  <data name="ResetMaxDecompressedSizeButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Επαναφορά στην προεπιλογή (1024 MB)</value>
+  </data>
+  <data name="ZipBombError" xml:space="preserve">
+    <value>Η εξαγωγή διακόπηκε: το συνολικό μέγεθος αποσυμπίεσης ξεπερνάει το όριο των {0} MB.</value>
+  </data>
+  <data name="ZipSlipError" xml:space="preserve">
+    <value>Η εξαγωγή διακόπηκε: το αρχείο περιέχει επικίνδυνη διαδρομή '{0}' που προσπαθεί να φύγει από τον φάκελο προορισμού.</value>
   </data>
 </root>

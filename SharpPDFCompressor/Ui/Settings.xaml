@@ -7,17 +7,21 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:local="using:SharpPDFCompressor.DataModels"
-    xmlns:winUi="using:CommunityToolkit.WinUI"
     xmlns:controls="using:CommunityToolkit.WinUI.Controls"
+    xmlns:localizer="using:WinUI3Localizer"
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Padding="20 0" HorizontalAlignment="Stretch" RowSpacing="10">
+        <Grid Padding="20 0 20 40" HorizontalAlignment="Stretch" RowSpacing="10">
             <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
-                <RowDefinition Height="Auto"></RowDefinition>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
             <Grid HorizontalAlignment="Stretch" Padding="0 20">
                 <Grid.ColumnDefinitions>
@@ -25,7 +29,7 @@
                     <ColumnDefinition Width="*" />
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
-                <TextBlock x:Uid="SettingsTitle"
+                <TextBlock localizer:Uids.Uid="SettingsTitle"
                            FontSize="26"
                            Grid.Column="0"
                            VerticalAlignment="Center" />
@@ -33,61 +37,87 @@
                            Grid.Column="2"
                            VerticalAlignment="Center" />
             </Grid>
-            <controls:SettingsCard Grid.Row="1" x:Uid="GithubButton">
+            <controls:SettingsCard Grid.Row="1" localizer:Uids.Uid="ThemeSettingsCard">
+                <ComboBox x:Name="ThemeComboBox"
+                          SelectedIndex="0"
+                          SelectionChanged="ThemeSelection_SelectionChanged">
+                    <ComboBoxItem localizer:Uids.Uid="ThemeSystemOption" Content="Use system setting" />
+                    <ComboBoxItem localizer:Uids.Uid="ThemeLightOption" Content="Light" />
+                    <ComboBoxItem localizer:Uids.Uid="ThemeDarkOption" Content="Dark" />
+                </ComboBox>
+            </controls:SettingsCard>
+
+            <controls:SettingsCard Grid.Row="2" localizer:Uids.Uid="LanguageSettingsCard">
+                <ComboBox x:Name="LanguageComboBox"
+                          SelectedIndex="0"
+                          SelectionChanged="LanguageSelection_SelectionChanged">
+                    <ComboBoxItem localizer:Uids.Uid="LanguageSystemOption" Content="Use Windows language" />
+                    <ComboBoxItem localizer:Uids.Uid="LanguageEnglishOption" Content="English" />
+                    <ComboBoxItem localizer:Uids.Uid="LanguageGreekOption" Content="Greek" />
+                </ComboBox>
+            </controls:SettingsCard>
+
+            <controls:SettingsCard Grid.Row="3" localizer:Uids.Uid="AppDataSettingsCard">
+                <Button Click="AppDataFolderButton_Click"
+                        localizer:Uids.Uid="OpenAppDataFolderButton">
+                    <TextBlock localizer:Uids.Uid="OpenAppDataFolderButtonText" />
+                </Button>
+            </controls:SettingsCard>
+
+            <controls:SettingsCard Grid.Row="4" localizer:Uids.Uid="GithubButton">
                 <Button Click="GitHubButtonOpenLink">
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <Image Width="16" Height="16" VerticalAlignment="Center">
                             <Image.Source>
-                                <SvgImageSource UriSource="ms-appx:///Assets/GitHub_Invertocat_Black.svg"/>
+                                <SvgImageSource UriSource="ms-appx:///Assets/GitHub_Invertocat_Black.svg" />
                             </Image.Source>
                         </Image>
-                        <TextBlock Text="View on GitHub" VerticalAlignment="Center"/>
+                        <TextBlock localizer:Uids.Uid="GithubLinkButton" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </controls:SettingsCard>
 
-            <controls:SettingsCard Grid.Row="2" x:Uid="LogoAttribution">
+            <controls:SettingsCard Grid.Row="5" localizer:Uids.Uid="LogoAttribution">
                 <Button Click="LogoLinkedInOpenLink">
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Image Source="ms-appx:///Assets/LI-In-Bug.png" 
+                        <Image Source="ms-appx:///Assets/LI-In-Bug.png"
                                Width="16"
-                               Height="16" 
-                               VerticalAlignment="Center"/>
-                        <TextBlock Text="View on LinkedIn" VerticalAlignment="Center"/>
+                               Height="16"
+                               VerticalAlignment="Center" />
+                        <TextBlock localizer:Uids.Uid="LinkedInLinkButton" VerticalAlignment="Center" />
                     </StackPanel>
                 </Button>
             </controls:SettingsCard>
 
-            <Expander Grid.Row="3" x:Uid="LicenseExpander"
-                      HorizontalAlignment="Stretch"
-                      ExpandDirection="Down">
-                <ListView ItemsSource="{x:Bind ViewModel.Licenses,Mode=OneWay}" SelectionMode="None" Width="750">
-                    <ListView.ItemTemplate>
-                        <DataTemplate x:DataType="local:PackageLicense">
-                            <Grid Padding="0,12,0,12" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
-                                  BorderThickness="0,0,0,1">
-                                <Grid.ColumnDefinitions>
-                                    <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="Auto" />
-                                </Grid.ColumnDefinitions>
-                                <StackPanel Grid.Column="0" Orientation="Vertical" Spacing="2">
-                                    <StackPanel Orientation="Horizontal" Spacing="8">
-                                        <TextBlock Text="{x:Bind PackageId}" FontWeight="SemiBold" FontSize="16" />
-                                        <TextBlock Text="{x:Bind PackageVersion}" Foreground="Gray"
-                                                   VerticalAlignment="Bottom" />
-                                    </StackPanel>
+            <controls:SettingsExpander Grid.Row="6" localizer:Uids.Uid="LicenseExpander"
+                                       HorizontalAlignment="Stretch"
+                                       ItemsSource="{x:Bind ViewModel.Licenses, Mode=OneWay}">
+                <controls:SettingsExpander.ItemTemplate>
+                    <DataTemplate x:DataType="local:PackageLicense">
+                        <controls:SettingsCard Header="{x:Bind PackageId}"
+                                               Description="{x:Bind VersionWithLicense}"
+                                               Tag="{x:Bind}"
+                                               IsClickEnabled="True"
+                                               Click="LicenseCard_Click" />
+                    </DataTemplate>
+                </controls:SettingsExpander.ItemTemplate>
+            </controls:SettingsExpander>
 
-                                    <TextBlock Text="{x:Bind DisplayLicense}" FontStyle="Italic" Foreground="Gray" />
-                                </StackPanel>
-                                <HyperlinkButton Grid.Column="1"
-                                                 NavigateUri="{x:Bind ActionableUrl}"
-                                                 Content="View License"
-                                                 VerticalAlignment="Center" />
-                            </Grid>
-                        </DataTemplate>
-                    </ListView.ItemTemplate>
-                </ListView>
-            </Expander>
+            <controls:SettingsCard x:Name="UpdateCheckCard"
+                                   Grid.Row="7"
+                                   localizer:Uids.Uid="UpdateCheckCard">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ProgressRing x:Name="UpdateProgressRing"
+                                  IsActive="{x:Bind ViewModel.UpdateInProgress, Mode=OneWay}"
+                                  Width="16"
+                                  Height="16"
+                                  Visibility="Collapsed" />
+                    <Button x:Name="CheckForUpdatesButton"
+                            Click="CheckForUpdatesButton_Click">
+                        <TextBlock localizer:Uids.Uid="CheckForUpdatesButtonText" />
+                    </Button>
+                </StackPanel>
+            </controls:SettingsCard>
         </Grid>
     </ScrollViewer>
 </Page>

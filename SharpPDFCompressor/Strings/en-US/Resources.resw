@@ -123,15 +123,6 @@
   <data name="HomeTitle.Text" xml:space="preserve">
     <value>Home</value>
   </data>
-  <data name="LowCompressionButton.Content" xml:space="preserve">
-    <value>Low</value>
-  </data>
-  <data name="MaxCompressionButton.Content" xml:space="preserve">
-    <value>Max (not recommended)</value>
-  </data>
-  <data name="MediumCompressionButton.Content" xml:space="preserve">
-    <value>Medium</value>
-  </data>
   <data name="PickFileButton.Text" xml:space="preserve">
     <value>Select a file</value>
   </data>
@@ -139,17 +130,10 @@
     <value>Pick a folder</value>
   </data>
   <data name="HomeSubTitle.Text" xml:space="preserve">
-    <value>You can compress a single .pdf file or all the .pdf files inside a folder and its subfolders.
-You can also compress all the .pdf files inside an archive file (.zip, tar.gz, etc.)</value>
-  </data>
-  <data name="HighCompressionButton.Content" xml:space="preserve">
-    <value>High</value>
+    <value>You can compress a single PDF file, all PDF files within a folder and its subfolders, or all PDF files contained in an archive file (such as .zip or .tar.gz).</value>
   </data>
   <data name="InnerCompressButton.Text" xml:space="preserve">
     <value>Compress</value>
-  </data>
-  <data name="CompressionLevelGroup.Header" xml:space="preserve">
-    <value>Compression Level</value>
   </data>
   <data name="HomePageButton.Content" xml:space="preserve">
     <value>Home</value>
@@ -162,6 +146,24 @@ You can also compress all the .pdf files inside an archive file (.zip, tar.gz, e
   </data>
   <data name="Compressing" xml:space="preserve">
     <value>Compressing</value>
+  </data>
+  <data name="CompressionProgressCounter" xml:space="preserve">
+    <value>Compressing {0}/{1} files ({2:0}%).</value>
+  </data>
+  <data name="CompressionSizeSummary" xml:space="preserve">
+    <value>Before: {0}  After: {1}  Reduction: {2} - {3:0.#}%</value>
+  </data>
+  <data name="SizeSummaryInfoBar.Title" xml:space="preserve">
+    <value>Compression results</value>
+  </data>
+  <data name="SizeBeforeLabel.Text" xml:space="preserve">
+    <value>Before</value>
+  </data>
+  <data name="SizeAfterLabel.Text" xml:space="preserve">
+    <value>After</value>
+  </data>
+  <data name="SizeReducedByLabel.Text" xml:space="preserve">
+    <value>Reduced by</value>
   </data>
   <data name="Success" xml:space="preserve">
     <value>Success</value>
@@ -176,7 +178,7 @@ You can also compress all the .pdf files inside an archive file (.zip, tar.gz, e
     <value>Finish</value>
   </data>
   <data name="CopiedErrorTeachingTip.Title" xml:space="preserve">
-    <value>The error is copied to the clipboard</value>
+    <value>The error is copied to the clipboard.</value>
   </data>
   <data name="SettingsTitle.Text" xml:space="preserve">
     <value>About</value>
@@ -184,33 +186,41 @@ You can also compress all the .pdf files inside an archive file (.zip, tar.gz, e
   <data name="InvalidFileException" xml:space="preserve">
     <value>The file you chose is not a .pdf file or does not exist.</value>
   </data>
-  <data name="CompressionLevelGroup.Description" xml:space="preserve">
-    <value>Select between 4 different levels of compression.</value>
+  <data name="CompressedSuffixCard.Header" xml:space="preserve">
+    <value>Compressed file suffix</value>
   </data>
-  <data name="DeleteOriginalFilesSwitch.Header" xml:space="preserve">
-    <value>Delete original pdf files</value>
+  <data name="CompressedSuffixCard.Description" xml:space="preserve">
+    <value>This suffix is added to compressed PDF filenames.</value>
   </data>
-  <data name="DeleteOriginalFilesSwitch.Description" xml:space="preserve">
-    <value>When enabled, all compressed PDF files are deleted. This option does not apply when compressing PDF files inside a compressed archive because each time a new copy is generated.</value>
+  <data name="IgnoreCompressedFilesCard.Header" xml:space="preserve">
+    <value>Ignore already compressed files</value>
+  </data>
+  <data name="IgnoreCompressedFilesCard.Description" xml:space="preserve">
+    <value>Skip PDFs whose filenames already contain the compressed suffix.</value>
+  </data>
+  <data name="CompressImages.Header" xml:space="preserve">
+    <value>Compress images</value>
+  </data>
+  <data name="CompressImages.Description" xml:space="preserve">
+    <value>When enabled, images in PDF files are recompressed to reduce file size.</value>
   </data>
   <data name="GenericError" xml:space="preserve">
-    <value>An unexpected error occurred. If this persist, please report it to the developer!</value>
+    <value>An unexpected error occurred. If the problem persists, please report it to the developer.</value>
   </data>
   <data name="LicenseExpander.Header" xml:space="preserve">
-    <value>View the libraries used and their licenses</value>
+    <value>Open-source libraries and licenses</value>
   </data>
   <data name="GithubButton.Header" xml:space="preserve">
     <value>Source code</value>
   </data>
   <data name="GithubButton.Description" xml:space="preserve">
-    <value>This app uses open-source libraries like ghostscript to provide you with pdf compressing capabilities.
-I welcome and encourage contributions to the code of this application. You can review the modified code on GitHub.</value>
+    <value>SharpPDFCompressor uses open-source libraries, including MuPDF.NET, for PDF compression. View the source code or contribute on GitHub.</value>
   </data>
   <data name="LogoAttribution.Header" xml:space="preserve">
     <value>Application icon</value>
   </data>
   <data name="LogoAttribution.Description" xml:space="preserve">
-    <value>Many thanks to my friend Apostolos Paschalis for creating the application icon. Check out his LinkedIn profile for more.</value>
+    <value>Thanks to Apostolos Paschalis for creating the app icon. View his LinkedIn profile.</value>
   </data>
   <data name="CancelOperation" xml:space="preserve">
     <value>Cancelling operation...</value>
@@ -232,5 +242,146 @@ I welcome and encourage contributions to the code of this application. You can r
   </data>
   <data name="LongNameException" xml:space="preserve">
     <value>The file name path exceeds the maximum size of 250 characters. Please make the folder and file names shorter and try again.</value>
+  </data>
+  <data name="ThemeSettingsCard.Header" xml:space="preserve">
+    <value>Application theme</value>
+  </data>
+  <data name="ThemeSettingsCard.Description" xml:space="preserve">
+    <value>Choose whether the app follows your system theme or uses Light or Dark mode.</value>
+  </data>
+  <data name="ThemeSystemOption.Content" xml:space="preserve">
+    <value>Use system setting</value>
+  </data>
+  <data name="ThemeLightOption.Content" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="ThemeDarkOption.Content" xml:space="preserve">
+    <value>Dark</value>
+  </data>
+  <data name="GithubLinkButton.Text" xml:space="preserve">
+    <value>View source on GitHub</value>
+  </data>
+  <data name="LinkedInLinkButton.Text" xml:space="preserve">
+    <value>View profile</value>
+  </data>
+  <data name="AdvancedSettingsExpander.Header" xml:space="preserve">
+    <value>Advanced settings</value>
+  </data>
+  <data name="DeleteOriginalCardHeader" xml:space="preserve">
+    <value>Delete original .pdf files</value>
+  </data>
+  <data name="DeleteOriginalCardDescription" xml:space="preserve">
+    <value>When enabled, all original .pdf files are deleted.</value>
+  </data>
+  <data name="CreateNewFolderCardHeader" xml:space="preserve">
+    <value>Compress to a new folder</value>
+  </data>
+  <data name="CreateNewFolderCardDescription" xml:space="preserve">
+    <value>When enabled, compressed files are created in a new folder at the same path as the folder you selected for compression.</value>
+  </data>
+  <data name="AppDataSettingsCard.Header" xml:space="preserve">
+    <value>App data</value>
+  </data>
+  <data name="AppDataSettingsCard.Description" xml:space="preserve">
+    <value>Open the folder where the app stores its local data.</value>
+  </data>
+  <data name="OpenAppDataFolderButton.AutomationProperties.Name" xml:space="preserve">
+    <value>Open app data folder</value>
+  </data>
+  <data name="OpenAppDataFolderButtonText.Text" xml:space="preserve">
+    <value>Open app data folder</value>
+  </data>
+  <data name="LanguageSettingsCard.Header" xml:space="preserve">
+    <value>App language</value>
+  </data>
+  <data name="LanguageSettingsCard.Description" xml:space="preserve">
+    <value>Follow the Windows language or choose Greek or English.</value>
+  </data>
+  <data name="LanguageSystemOption.Content" xml:space="preserve">
+    <value>Use Windows language</value>
+  </data>
+  <data name="LanguageEnglishOption.Content" xml:space="preserve">
+    <value>English</value>
+  </data>
+  <data name="LanguageGreekOption.Content" xml:space="preserve">
+    <value>Greek</value>
+  </data>
+  <data name="LanguageToggleSideButton.Content" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="LanguageToggleAutoTooltip" xml:space="preserve">
+    <value>Language: Follow Windows ({0})</value>
+  </data>
+  <data name="LanguageToggleEnglishTooltip" xml:space="preserve">
+    <value>Language: English</value>
+  </data>
+  <data name="LanguageToggleGreekTooltip" xml:space="preserve">
+    <value>Language: Greek</value>
+  </data>
+  <data name="ThemeToggleSideButton.Content" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="WorkerProgressExpander.Header" xml:space="preserve">
+    <value>Compression log</value>
+  </data>
+  <data name="WorkerProgressExpander.Description" xml:space="preserve">
+    <value>Live log of files being compressed by the workers.</value>
+  </data>
+  <data name="CompressionDone" xml:space="preserve">
+    <value>Completed.</value>
+  </data>
+  <data name="CompressionDoneSummary" xml:space="preserve">
+    <value>Completed — Before: {0}; After: {1}; Reduction: {2} ({3:0.0}%).</value>
+  </data>
+  <data name="UpdateCheckCard.Header" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="UpdateCheckCard.Description" xml:space="preserve">
+    <value>Check for a new version of the app on the Microsoft Store.</value>
+  </data>
+  <data name="CheckForUpdatesButtonText.Text" xml:space="preserve">
+    <value>Check for updates</value>
+  </data>
+  <data name="UpdateAvailableTitle" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+  <data name="UpdateAvailableMessage" xml:space="preserve">
+    <value>A new version of SharpPDFCompressor is available. Would you like to update now?</value>
+  </data>
+  <data name="UpdateNowButton" xml:space="preserve">
+    <value>Update Now</value>
+  </data>
+  <data name="DismissButton" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="UpToDateTitle" xml:space="preserve">
+    <value>Up to date</value>
+  </data>
+  <data name="UpToDateMessage" xml:space="preserve">
+    <value>Your app is already up to date. No new updates are available.</value>
+  </data>
+  <data name="UpdateCheckErrorTitle" xml:space="preserve">
+    <value>Update check failed</value>
+  </data>
+  <data name="UpdateCheckErrorMessage" xml:space="preserve">
+    <value>Unable to check for updates. Make sure you are connected to the internet and try again. Note: update checks are limited to once every 30 minutes.</value>
+  </data>
+  <data name="OkButton" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="MaxDecompressedSizeCard.Header" xml:space="preserve">
+    <value>Max decompressed size</value>
+  </data>
+  <data name="MaxDecompressedSizeCard.Description" xml:space="preserve">
+    <value>Maximum total decompressed archive size in MB. Protects against zip bomb attacks.</value>
+  </data>
+  <data name="ResetMaxDecompressedSizeButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Reset to default (1024 MB)</value>
+  </data>
+  <data name="ZipBombError" xml:space="preserve">
+    <value>Extraction aborted: total decompressed size exceeds the limit of {0} MB.</value>
+  </data>
+  <data name="ZipSlipError" xml:space="preserve">
+    <value>Extraction aborted: archive contains a dangerous entry path '{0}' that attempts to escape the target directory.</value>
   </data>
 </root>

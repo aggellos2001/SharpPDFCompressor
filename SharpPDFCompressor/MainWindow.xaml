@@ -1,24 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <winex:WindowEx
     x:Class="SharpPDFCompressor.MainWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:SharpPDFCompressor"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:localizer="using:WinUI3Localizer"
     xmlns:winex="using:WinUIEx"
     MinWidth="1250"
     MinHeight="600"
     mc:Ignorable="d"
-    Title="SharpPDFCompressor"
-    >
+    Title="SharpPDFCompressor">
     <winex:WindowEx.SystemBackdrop>
-        <MicaBackdrop/>
+        <MicaBackdrop />
     </winex:WindowEx.SystemBackdrop>
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
         <TitleBar
             Padding="15"
@@ -32,17 +32,40 @@
         </TitleBar>
 
         <Grid Row="1" Padding="1">
-            <NavigationView 
-               PaneDisplayMode="LeftCompact" 
-               IsBackButtonVisible="Collapsed"
-               SelectionChanged="SideMenu_SelectionChanged">
+            <NavigationView
+                x:Name="MainNavigationView"
+                PaneDisplayMode="LeftCompact"
+                IsBackButtonVisible="Collapsed"
+                SelectionChanged="SideMenu_SelectionChanged">
                 <NavigationView.MenuItems>
-                    <NavigationViewItem 
-                       x:Uid="HomePageButton" 
-                       Icon="Home" 
-                       x:Name="HomePageSideButton" />
+                    <NavigationViewItem
+                        localizer:Uids.Uid="HomePageButton"
+                        Icon="Home"
+                        x:Name="HomePageSideButton" />
                 </NavigationView.MenuItems>
-                <Frame x:Name="ContentFrame"/>
+                <NavigationView.FooterMenuItems>
+                    <NavigationViewItem
+                        localizer:Uids.Uid="ThemeToggleSideButton"
+                        x:Name="ThemeToggleSideButton"
+                        Content="Theme"
+                        SelectsOnInvoked="False"
+                        PointerPressed="ThemeToggle_PointerPressed">
+                        <NavigationViewItem.Icon>
+                            <FontIcon x:Name="ThemeIcon" Glyph="&#xE7F4;" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                    <NavigationViewItem
+                        localizer:Uids.Uid="LanguageToggleSideButton"
+                        x:Name="LanguageToggleSideButton"
+                        Content="Language"
+                        SelectsOnInvoked="False"
+                        PointerPressed="LanguageToggle_PointerPressed">
+                        <NavigationViewItem.Icon>
+                            <FontIcon x:Name="LanguageCode" FontFamily="Segoe UI" Glyph="EN" />
+                        </NavigationViewItem.Icon>
+                    </NavigationViewItem>
+                </NavigationView.FooterMenuItems>
+                <Frame x:Name="ContentFrame" />
             </NavigationView>
         </Grid>
     </Grid>
