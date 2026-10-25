@@ -31,9 +31,7 @@
         <AppxBundle>Never</AppxBundle>
         <HoursBetweenUpdateChecks>0</HoursBetweenUpdateChecks>
 
-        <PublishAot>true</PublishAot>
-        <IsAotCompatible>true</IsAotCompatible>
-        <VerifyReferenceAotCompatibility>true</VerifyReferenceAotCompatibility>
+        <PublishAot>false</PublishAot>
         <TrimMode>partial</TrimMode>
         <DisableRuntimeMarshalling>true</DisableRuntimeMarshalling>
 
@@ -43,8 +41,7 @@
     <PropertyGroup Condition="'$(WindowsPackageType)' == 'None'">
         <PublishSingleFile>true</PublishSingleFile>
     </PropertyGroup>
-
-
+    
     <ItemGroup>
         <Manifest Include="$(ApplicationManifest)"/>
     </ItemGroup>

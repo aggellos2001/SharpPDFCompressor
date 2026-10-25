@@ -22,28 +22,6 @@
     "LicenseInformationOrigin": 0
   },
   {
-    "PackageId": "Microsoft.DotNet.ILCompiler",
-    "PackageVersion": "10.0.12",
-    "PackageProjectUrl": "https://dot.net/",
-    "Copyright": "\u00A9 Microsoft Corporation. All rights reserved.",
-    "Authors": "Microsoft",
-    "Description": "Provides a native AOT compiler and runtime for .NET",
-    "License": "MIT",
-    "LicenseUrl": "https://licenses.nuget.org/MIT",
-    "LicenseInformationOrigin": 0
-  },
-  {
-    "PackageId": "Microsoft.NET.ILLink.Tasks",
-    "PackageVersion": "10.0.12",
-    "PackageProjectUrl": "https://dot.net/",
-    "Copyright": "\u00A9 Microsoft Corporation. All rights reserved.",
-    "Authors": "Microsoft",
-    "Description": "MSBuild tasks for running the IL Linker",
-    "License": "MIT",
-    "LicenseUrl": "https://licenses.nuget.org/MIT",
-    "LicenseInformationOrigin": 0
-  },
-  {
     "PackageId": "Microsoft.Windows.SDK.BuildTools",
     "PackageVersion": "10.0.28000.2705",
     "PackageProjectUrl": "https://aka.ms/WinSDKProjectURL",

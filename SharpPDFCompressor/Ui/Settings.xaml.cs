@@ -5,6 +5,10 @@ using Microsoft.UI.Xaml.Navigation;
 using SharpPDFCompressor.DataModels;
 using SharpPDFCompressor.ViewModels;
 using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Windows.ApplicationModel;
+using Windows.Services.Store;
 using Windows.System;
 
 namespace SharpPDFCompressor.Ui;
@@ -15,6 +19,7 @@ public sealed partial class Settings : Page
     private bool _isUpdatingThemeSelector;
     private bool _isLanguageSelectorInitialized;
     private bool _isUpdatingLanguageSelector;
+
     public Settings()
     {
         this.InitializeComponent();
@@ -35,6 +40,8 @@ public sealed partial class Settings : Page
 
         this._isThemeSelectorInitialized = true;
         this._isLanguageSelectorInitialized = true;
+
+        this.UpdateCheckCard.Visibility = IsPackaged() ? Visibility.Visible : Visibility.Collapsed;
     }
 
     internal void UpdateThemeSelection(MainWindow.AppTheme theme)
@@ -121,6 +128,98 @@ public sealed partial class Settings : Page
         {
             Uri uri = new(license.ActionableUrl);
             await Launcher.LaunchUriAsync(uri);
+        }
+    }
+
+    private async void CheckForUpdatesButton_Click(object sender, RoutedEventArgs e)
+    {
+        this.CheckForUpdatesButton.IsEnabled = false;
+        this.UpdateProgressRing.Visibility = Visibility.Visible;
+
+        try
+        {
+            IReadOnlyList<StorePackageUpdate>? updates = await this.ViewModel.CheckForUpdatesAsync();
+
+            if (updates is null)
+            {
+                await this.ShowErrorDialog("UpdateCheckErrorTitle", "UpdateCheckErrorMessage");
+                return;
+            }
+
+            if (updates.Count > 0)
+            {
+                ContentDialog dialog = new()
+                {
+                    XamlRoot = this.XamlRoot,
+                    Title = new TextBlock { Text = this.GetLocalized("UpdateAvailableTitle") },
+                    Content =
+                        new TextBlock
+                        {
+                            Text = this.GetLocalized("UpdateAvailableMessage"), TextWrapping = TextWrapping.Wrap
+                        },
+                    PrimaryButtonText = this.GetLocalized("UpdateNowButton"),
+                    CloseButtonText = this.GetLocalized("DismissButton")
+                };
+
+                ContentDialogResult dialogResult = await dialog.ShowAsync();
+
+                if (dialogResult == ContentDialogResult.Primary)
+                {
+                    await this.ViewModel.RequestDownloadAndInstallUpdatesAsync(updates!);
+                }
+            }
+            else
+            {
+                ContentDialog dialog = new()
+                {
+                    XamlRoot = this.XamlRoot,
+                    Title = new TextBlock { Text = this.GetLocalized("UpToDateTitle") },
+                    Content = new TextBlock { Text = this.GetLocalized("UpToDateMessage") },
+                    CloseButtonText = this.GetLocalized("OkButton")
+                };
+
+                await dialog.ShowAsync();
+            }
+        }
+        catch (Exception)
+        {
+            await this.ShowErrorDialog("UpdateCheckErrorTitle", "UpdateCheckErrorMessage");
+        }
+        finally
+        {
+            this.CheckForUpdatesButton.IsEnabled = true;
+            this.UpdateProgressRing.Visibility = Visibility.Collapsed;
+        }
+    }
+
+    private async Task ShowErrorDialog(string titleKey, string messageKey)
+    {
+        ContentDialog dialog = new()
+        {
+            XamlRoot = this.XamlRoot,
+            Title = new TextBlock { Text = this.GetLocalized(titleKey) },
+            Content = new TextBlock { Text = this.GetLocalized(messageKey), TextWrapping = TextWrapping.Wrap },
+            CloseButtonText = this.GetLocalized("OkButton")
+        };
+
+        await dialog.ShowAsync();
+    }
+
+    private string GetLocalized(string key)
+    {
+        return WinUI3Localizer.Localizer.Get().GetLocalizedString(key);
+    }
+
+    private static bool IsPackaged()
+    {
+        try
+        {
+            _ = Package.Current;
+            return true;
+        }
+        catch (InvalidOperationException)
+        {
+            return false;
         }
     }
 }

@@ -12,8 +12,9 @@
     mc:Ignorable="d">
 
     <ScrollViewer VerticalScrollBarVisibility="Auto">
-        <Grid Padding="20 0" HorizontalAlignment="Stretch" RowSpacing="10">
+        <Grid Padding="20 0 20 40" HorizontalAlignment="Stretch" RowSpacing="10">
             <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="Auto" />
@@ -101,6 +102,22 @@
                     </DataTemplate>
                 </controls:SettingsExpander.ItemTemplate>
             </controls:SettingsExpander>
+
+            <controls:SettingsCard x:Name="UpdateCheckCard"
+                                   Grid.Row="7"
+                                   localizer:Uids.Uid="UpdateCheckCard">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <ProgressRing x:Name="UpdateProgressRing"
+                                  IsActive="{x:Bind ViewModel.UpdateInProgress, Mode=OneWay}"
+                                  Width="16"
+                                  Height="16"
+                                  Visibility="Collapsed" />
+                    <Button x:Name="CheckForUpdatesButton"
+                            Click="CheckForUpdatesButton_Click">
+                        <TextBlock localizer:Uids.Uid="CheckForUpdatesButtonText" />
+                    </Button>
+                </StackPanel>
+            </controls:SettingsCard>
         </Grid>
     </ScrollViewer>
 </Page>

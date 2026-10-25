@@ -198,12 +198,6 @@
   <data name="IgnoreCompressedFilesCard.Description" xml:space="preserve">
     <value>Skip PDFs whose filenames already contain the compressed suffix.</value>
   </data>
-  <data name="DeleteOriginalFilesSwitch.Header" xml:space="preserve">
-    <value>Delete original pdf files</value>
-  </data>
-  <data name="DeleteOriginalFilesSwitch.Description" xml:space="preserve">
-    <value>When enabled, this deletes the original PDF file(s).</value>
-  </data>
   <data name="CompressImages.Header" xml:space="preserve">
     <value>Compress images</value>
   </data>
@@ -248,12 +242,6 @@
   </data>
   <data name="LongNameException" xml:space="preserve">
     <value>The file name path exceeds the maximum size of 250 characters. Please make the folder and file names shorter and try again.</value>
-  </data>
-  <data name="CreateNewFolder.Description" xml:space="preserve">
-    <value>When this feature is enabled, all compressed PDF files are saved in a newly created folder alongside the original folder you selected for compression; otherwise, the compressed files are saved in the same folder.</value>
-  </data>
-  <data name="CreateNewFolder.Header" xml:space="preserve">
-    <value>Compress in a new directory</value>
   </data>
   <data name="ThemeSettingsCard.Header" xml:space="preserve">
     <value>Application theme</value>
@@ -344,5 +332,41 @@
   </data>
   <data name="CompressionDoneSummary" xml:space="preserve">
     <value>Completed — Before: {0}; After: {1}; Reduction: {2} ({3:0.0}%).</value>
+  </data>
+  <data name="UpdateCheckCard.Header" xml:space="preserve">
+    <value>Updates</value>
+  </data>
+  <data name="UpdateCheckCard.Description" xml:space="preserve">
+    <value>Check for a new version of the app on the Microsoft Store.</value>
+  </data>
+  <data name="CheckForUpdatesButtonText.Text" xml:space="preserve">
+    <value>Check for updates</value>
+  </data>
+  <data name="UpdateAvailableTitle" xml:space="preserve">
+    <value>Update available</value>
+  </data>
+  <data name="UpdateAvailableMessage" xml:space="preserve">
+    <value>A new version of SharpPDFCompressor is available. Would you like to update now?</value>
+  </data>
+  <data name="UpdateNowButton" xml:space="preserve">
+    <value>Update Now</value>
+  </data>
+  <data name="DismissButton" xml:space="preserve">
+    <value>Dismiss</value>
+  </data>
+  <data name="UpToDateTitle" xml:space="preserve">
+    <value>Up to date</value>
+  </data>
+  <data name="UpToDateMessage" xml:space="preserve">
+    <value>Your app is already up to date. No new updates are available.</value>
+  </data>
+  <data name="UpdateCheckErrorTitle" xml:space="preserve">
+    <value>Update check failed</value>
+  </data>
+  <data name="UpdateCheckErrorMessage" xml:space="preserve">
+    <value>Unable to check for updates. Make sure you are connected to the internet and try again. Note: update checks are limited to once every 30 minutes.</value>
+  </data>
+  <data name="OkButton" xml:space="preserve">
+    <value>OK</value>
   </data>
 </root>

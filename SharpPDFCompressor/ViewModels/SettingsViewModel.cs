@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using SharpPDFCompressor.DataModels;
 using System;
 using System.Collections.Generic;
@@ -7,6 +7,7 @@ using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
+using Windows.Services.Store;
 
 namespace SharpPDFCompressor.ViewModels;
 
@@ -29,6 +30,42 @@ public partial class SettingsViewModel : ObservableObject
     }
 
     [ObservableProperty] public partial ObservableCollection<PackageLicense>? Licenses { get; set; }
+
+    [ObservableProperty] public partial bool UpdateInProgress { get; set; }
+
+    public async Task<IReadOnlyList<StorePackageUpdate>?> CheckForUpdatesAsync()
+    {
+        try
+        {
+            _ = Package.Current;
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+
+        this.UpdateInProgress = true;
+        try
+        {
+            StoreContext storeContext = StoreContext.GetDefault();
+            IReadOnlyList<StorePackageUpdate> updates = await storeContext.GetAppAndOptionalStorePackageUpdatesAsync();
+            return updates;
+        }
+        catch (Exception)
+        {
+            return null;
+        }
+        finally
+        {
+            this.UpdateInProgress = false;
+        }
+    }
+
+    public async Task RequestDownloadAndInstallUpdatesAsync(IReadOnlyList<StorePackageUpdate> updates)
+    {
+        StoreContext storeContext = StoreContext.GetDefault();
+        await storeContext.RequestDownloadAndInstallStorePackageUpdatesAsync(updates);
+    }
 
     public async Task LoadLicenses()
     {
