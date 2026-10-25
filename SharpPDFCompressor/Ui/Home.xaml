@@ -119,6 +119,20 @@
                                 <ComboBoxItem Content="32" />
                             </ComboBox>
                         </controls:SettingsCard>
+                        <controls:SettingsCard localizer:Uids.Uid="MaxDecompressedSizeCard"
+                                               HeaderIcon="{ui:FontIcon Glyph=&#xe740;}"
+                                               HorizontalAlignment="Stretch">
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <TextBox Text="{x:Bind ViewModel.MaxDecompressedSizeMb, Mode=TwoWay}"
+                                         MinWidth="160"
+                                         InputScope="Number" />
+                                <Button Click="ResetMaxDecompressedSize_Click"
+                                        localizer:Uids.Uid="ResetMaxDecompressedSizeButton"
+                                        AutomationProperties.Name="Reset max decompressed size">
+                                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE777;" />
+                                </Button>
+                            </StackPanel>
+                        </controls:SettingsCard>
                     </controls:SettingsExpander.Items>
                 </controls:SettingsExpander>
             </StackPanel>

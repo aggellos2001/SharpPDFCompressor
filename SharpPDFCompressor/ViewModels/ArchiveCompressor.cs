@@ -3,6 +3,7 @@ using SharpCompress.Archives;
 using SharpCompress.Writers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -62,6 +63,10 @@ public class ArchiveCompressor : Compressor
             Directory.CreateDirectory(zipExtractionDir);
         }
 
+        long totalDecompressedBytes = 0;
+        long maxDecompressedBytes = (long)this.MaxDecompressedSizeMb * 1024L * 1024L;
+        string resolvedExtractionDir = Path.GetFullPath(zipExtractionDir);
+
         try
         {
             await using var archive = await ArchiveFactory.OpenAsyncArchive(this.InputFilesPath, cancellationToken: this.Ct);
@@ -75,10 +80,34 @@ public class ArchiveCompressor : Compressor
                     continue;
                 }
 
-                this.ProgressHandler?.Report((null, 0, $"Extracting: {entry.Key}", null, null));
-
                 string entryKey = entry.Key ?? string.Empty;
+
+                // Zip slip protection: verify the resolved destination stays inside the extraction directory
                 string destPath = Path.Combine(zipExtractionDir, entryKey.Replace('/', Path.DirectorySeparatorChar));
+                string resolvedDestPath = Path.GetFullPath(destPath);
+                if (!resolvedDestPath.StartsWith(resolvedExtractionDir + Path.DirectorySeparatorChar, StringComparison.Ordinal)
+                    && resolvedDestPath != resolvedExtractionDir)
+                {
+                    result.Errors.Add(string.Format(
+                        CultureInfo.CurrentCulture,
+                        this.LocalizedResources.GetLocalizedString("ZipSlipError"),
+                        entryKey));
+                    return result;
+                }
+
+                // Zip bomb protection: check accumulated decompressed size before writing
+                long entryLength = entry.Size;
+                if (totalDecompressedBytes + entryLength > maxDecompressedBytes)
+                {
+                    result.Errors.Add(string.Format(
+                        CultureInfo.CurrentCulture,
+                        this.LocalizedResources.GetLocalizedString("ZipBombError"),
+                        this.MaxDecompressedSizeMb));
+                    return result;
+                }
+
+                this.ProgressHandler?.Report((null, 0, $"Extracting: {entryKey}", null, null));
+
                 string? destDir = Path.GetDirectoryName(destPath);
                 if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
                 {
@@ -95,27 +124,28 @@ public class ArchiveCompressor : Compressor
 
                 await using var entryStream = await entry.OpenEntryStreamAsync(this.Ct);
                 await entryStream.CopyToAsync(fileStream, this.Ct);
+
+                // Track the actual decompressed size
+                totalDecompressedBytes += new FileInfo(destPath).Length;
             }
         }
         catch (OperationCanceledException e)
         {
             result.Errors.Add(e.Message);
-            if (Directory.Exists(zipExtractionDir))
-            {
-                Directory.Delete(zipExtractionDir, true);
-            }
-
             return result;
         }
         catch (Exception e)
         {
             result.Errors.Add("Error occured " + e.Message);
-            if (Directory.Exists(zipExtractionDir))
+            return result;
+        }
+        finally
+        {
+            // Clean up temp directory if extraction failed (result has errors and _tempFolderLocation is not yet set)
+            if (result.Errors.Count > 0 && Directory.Exists(zipExtractionDir))
             {
                 Directory.Delete(zipExtractionDir, true);
             }
-
-            return result;
         }
 
         this._tempFolderLocation = zipExtractionDir;

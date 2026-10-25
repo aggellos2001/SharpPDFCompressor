@@ -1,4 +1,5 @@
 using MuPDF.NET;
+using SharpPDFCompressor.DataModels;
 using SharpPDFCompressor.Utils;
 using System;
 using System.Collections.Concurrent;
@@ -37,6 +38,7 @@ public abstract class Compressor
     public bool CompressImages { get; init; }
     public required string CompressedSuffix { get; init; }
     public bool IgnoreCompressedFiles { get; init; }
+    public int MaxDecompressedSizeMb { get; init; } = AppSettings.DefaultMaxDecompressedSizeMb;
     public required CancellationToken Ct { get; init; }
     public required IProgress<(double? progressValue, int? workerID, string? message, int? completedFiles, int? totalFiles)>? ProgressHandler { get; init; }
 

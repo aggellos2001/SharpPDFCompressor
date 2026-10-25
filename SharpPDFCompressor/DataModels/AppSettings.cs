@@ -27,8 +27,11 @@ internal enum LanguagePreference
 
 internal sealed class AppSettings
 {
+    public const int DefaultMaxDecompressedSizeMb = 1024;
+
     public ThemePreference Theme { get; set; } = ThemePreference.System;
     public LanguagePreference Language { get; set; } = LanguagePreference.System;
+    public int MaxDecompressedSizeMb { get; set; } = DefaultMaxDecompressedSizeMb;
 
     [JsonIgnore]
     public LanguagePreference ResolvedLanguage => this.Language switch
@@ -129,5 +132,6 @@ internal static class AppSettingsStore
 
     private static bool IsValid(AppSettings settings) =>
         Enum.IsDefined(settings.Theme) &&
-        Enum.IsDefined(settings.Language);
+        Enum.IsDefined(settings.Language) &&
+        settings.MaxDecompressedSizeMb > 0;
 }

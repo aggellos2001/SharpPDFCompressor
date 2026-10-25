@@ -369,4 +369,19 @@
   <data name="OkButton" xml:space="preserve">
     <value>OK</value>
   </data>
+  <data name="MaxDecompressedSizeCard.Header" xml:space="preserve">
+    <value>Max decompressed size</value>
+  </data>
+  <data name="MaxDecompressedSizeCard.Description" xml:space="preserve">
+    <value>Maximum total decompressed archive size in MB. Protects against zip bomb attacks.</value>
+  </data>
+  <data name="ResetMaxDecompressedSizeButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Reset to default (1024 MB)</value>
+  </data>
+  <data name="ZipBombError" xml:space="preserve">
+    <value>Extraction aborted: total decompressed size exceeds the limit of {0} MB.</value>
+  </data>
+  <data name="ZipSlipError" xml:space="preserve">
+    <value>Extraction aborted: archive contains a dangerous entry path '{0}' that attempts to escape the target directory.</value>
+  </data>
 </root>

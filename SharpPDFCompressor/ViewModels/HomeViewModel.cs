@@ -5,6 +5,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using SharpCompress.Archives;
 using SharpCompress.Common;
+using SharpPDFCompressor.DataModels;
 using SharpPDFCompressor.Ui;
 using System;
 using System.Collections.Generic;
@@ -33,6 +34,7 @@ public partial class HomeViewModel : ObservableObject
     {
         this._localizer.LanguageChanged += this.Localizer_LanguageChanged;
         this.UpdateDeleteOriginalCardLabels();
+        this.MaxDecompressedSizeMb = App.Settings.MaxDecompressedSizeMb;
     }
 
     private void Localizer_LanguageChanged(object? sender, LanguageChangedEventArgs e) =>
@@ -101,6 +103,15 @@ public partial class HomeViewModel : ObservableObject
     [ObservableProperty] public partial string CompressedSuffix { get; set; } = Compressor.DefaultCompressedSuffix;
 
     [ObservableProperty] public partial bool IgnoreCompressedFiles { get; set; } = true;
+
+    [ObservableProperty]
+    public partial int MaxDecompressedSizeMb { get; set; } = AppSettings.DefaultMaxDecompressedSizeMb;
+
+    partial void OnMaxDecompressedSizeMbChanged(int value)
+    {
+        App.Settings.MaxDecompressedSizeMb = value;
+        AppSettingsStore.Save(App.Settings);
+    }
 
     [ObservableProperty] public partial string DeleteOriginalCardHeader { get; set; }
 
@@ -383,6 +394,7 @@ public partial class HomeViewModel : ObservableObject
                     CompressedSuffix = this.CompressedSuffix,
                     IgnoreCompressedFiles = this.IgnoreCompressedFiles,
                     DeleteOriginalFiles = this.DeleteOriginalFiles,
+                    MaxDecompressedSizeMb = this.MaxDecompressedSizeMb,
                     Ct = this._cts.Token
                 };
             }

@@ -1,4 +1,5 @@
 using Microsoft.UI.Xaml.Controls;
+using SharpPDFCompressor.DataModels;
 using SharpPDFCompressor.ViewModels;
 using System.Diagnostics.CodeAnalysis;
 
@@ -20,5 +21,10 @@ public sealed partial class Home : Page
     private void ResetCompressedSuffix_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
     {
         this.ViewModel.CompressedSuffix = Compressor.DefaultCompressedSuffix;
+    }
+
+    private void ResetMaxDecompressedSize_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+    {
+        this.ViewModel.MaxDecompressedSizeMb = AppSettings.DefaultMaxDecompressedSizeMb;
     }
 }
