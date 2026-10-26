@@ -1,10 +1,11 @@
 ﻿using SharpCompress.Common;
 using SharpCompress.Archives;
-using SharpCompress.Writers;
+using SharpPDFCompressor.Utils;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,7 +22,7 @@ public class ArchiveCompressor : Compressor
     /// </summary>
     private IEnumerable<string> FilterFilesForArchive(string directoryPath)
     {
-        List<string> allFiles = Directory.EnumerateFiles(directoryPath, "*.*", SearchOption.AllDirectories)
+        List<string> allFiles = Directory.EnumerateFiles(AppUtils.NormalizePath(directoryPath), "*.*", SearchOption.AllDirectories)
             .ToList();
         List<string> result = new();
 
@@ -48,7 +49,7 @@ public class ArchiveCompressor : Compressor
     protected override async Task<CompressionResult> PreCompressAsync()
     {
         CompressionResult result = new();
-        this.BeforeSizeBytes = new FileInfo(this.InputFilesPath).Length;
+        this.BeforeSizeBytes = new FileInfo(AppUtils.NormalizePath(this.InputFilesPath)).Length;
         string? parentDir = Path.GetDirectoryName(this.InputFilesPath);
         if (parentDir is null)
         {
@@ -58,9 +59,9 @@ public class ArchiveCompressor : Compressor
 
         string zipExtractionDir = Path.Combine(parentDir, Path.GetRandomFileName());
 
-        if (!Directory.Exists(zipExtractionDir))
+        if (!Directory.Exists(AppUtils.NormalizePath(zipExtractionDir)))
         {
-            Directory.CreateDirectory(zipExtractionDir);
+            Directory.CreateDirectory(AppUtils.NormalizePath(zipExtractionDir));
         }
 
         long totalDecompressedBytes = 0;
@@ -69,14 +70,24 @@ public class ArchiveCompressor : Compressor
 
         try
         {
-            await using var archive = await ArchiveFactory.OpenAsyncArchive(this.InputFilesPath, cancellationToken: this.Ct);
+            this.ProgressHandler?.Report((
+                null,
+                null,
+                this.LocalizedResources.GetLocalizedString("ExtractingStatus"),
+                null,
+                null));
 
-            await foreach (var entry in archive.EntriesAsync)
+            await using var archive = await ArchiveFactory.OpenAsyncArchive(AppUtils.NormalizePath(this.InputFilesPath), cancellationToken: this.Ct);
+
+            await foreach (IArchiveEntry entry in archive.EntriesAsync)
             {
                 this.Ct.ThrowIfCancellationRequested();
 
                 if (entry.IsDirectory)
                 {
+                    string dirKey = entry.Key ?? string.Empty;
+                    string destDirPath = Path.Combine(zipExtractionDir, dirKey.Replace('/', Path.DirectorySeparatorChar));
+                    Directory.CreateDirectory(AppUtils.NormalizePath(destDirPath));
                     continue;
                 }
 
@@ -106,16 +117,14 @@ public class ArchiveCompressor : Compressor
                     return result;
                 }
 
-                this.ProgressHandler?.Report((null, 0, $"Extracting: {entryKey}", null, null));
-
                 string? destDir = Path.GetDirectoryName(destPath);
-                if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(destDir))
+                if (!string.IsNullOrEmpty(destDir) && !Directory.Exists(AppUtils.NormalizePath(destDir)))
                 {
-                    Directory.CreateDirectory(destDir);
+                    Directory.CreateDirectory(AppUtils.NormalizePath(destDir));
                 }
 
                 await using var fileStream = new FileStream(
-                    destPath,
+                    AppUtils.NormalizePath(destPath),
                     FileMode.Create,
                     FileAccess.Write,
                     FileShare.None,
@@ -126,7 +135,7 @@ public class ArchiveCompressor : Compressor
                 await entryStream.CopyToAsync(fileStream, this.Ct);
 
                 // Track the actual decompressed size
-                totalDecompressedBytes += new FileInfo(destPath).Length;
+                totalDecompressedBytes += new FileInfo(AppUtils.NormalizePath(destPath)).Length;
             }
         }
         catch (OperationCanceledException e)
@@ -136,15 +145,18 @@ public class ArchiveCompressor : Compressor
         }
         catch (Exception e)
         {
+#if DEBUG
+            Console.Error.WriteLine(e);
+#endif
             result.Errors.Add("Error occured " + e.Message);
             return result;
         }
         finally
         {
             // Clean up temp directory if extraction failed (result has errors and _tempFolderLocation is not yet set)
-            if (result.Errors.Count > 0 && Directory.Exists(zipExtractionDir))
+            if (result.Errors.Count > 0 && Directory.Exists(AppUtils.NormalizePath(zipExtractionDir)))
             {
-                Directory.Delete(zipExtractionDir, true);
+                Directory.Delete(AppUtils.NormalizePath(zipExtractionDir), true);
             }
         }
 
@@ -152,7 +164,7 @@ public class ArchiveCompressor : Compressor
 
         this.Files =
         [
-            .. Directory.GetFiles(zipExtractionDir, "*.*", SearchOption.AllDirectories)
+            .. Directory.GetFiles(AppUtils.NormalizePath(zipExtractionDir), "*.*", SearchOption.AllDirectories)
                 .Where(file => IsPdf(file) && (!this.IgnoreCompressedFiles ||
                                                !Path.GetFileNameWithoutExtension(file).Contains(this.CompressedSuffix,
                                                    StringComparison.OrdinalIgnoreCase)))
@@ -189,61 +201,72 @@ public class ArchiveCompressor : Compressor
             }
 
             string originalArchiveName = Path.GetFileNameWithoutExtension(this.InputFilesPath);
-            string? destName = Path.Combine(resultDir, $"{originalArchiveName}{this.CompressedSuffix}.zip");
+            string archiveOutputPath = Path.Combine(resultDir, $"{originalArchiveName}.zip");
+            string safeArchiveName = AppUtils.GetSafeFileName(archiveOutputPath, this.CompressedSuffix);
+            string destName = Path.Combine(resultDir, safeArchiveName);
             int counter = 1;
-            while (File.Exists(destName))
+            while (File.Exists(AppUtils.NormalizePath(destName)))
             {
-                destName = Path.Combine(resultDir, $"{originalArchiveName}{this.CompressedSuffix}({counter}).zip");
+                safeArchiveName = AppUtils.GetSafeFileName(archiveOutputPath, $"{this.CompressedSuffix} ({counter})");
+                destName = Path.Combine(resultDir, safeArchiveName);
                 counter++;
             }
 
             await using FileStream stream = new(
-                destName,
+                AppUtils.NormalizePath(destName),
                 FileMode.Create,
                 FileAccess.Write,
                 FileShare.None,
                 bufferSize: 81920,
                 useAsync: true);
 
-            await using var writer = await WriterFactory.OpenAsyncWriter(
-                stream, ArchiveType.Zip,
-                new WriterOptions(CompressionType.Deflate)
-                {
-                    ArchiveEncoding = new ArchiveEncoding { Forced = Encoding.UTF8 }
-                }, this.Ct);
+            // SharpCompress IWriter treats trailing-slash names as 0-byte files, which
+            // shows up as a blank file next to the real folder. ZipArchive directory
+            // entries preserve empty folders without that side effect.
+            this.ProgressHandler?.Report((
+                null,
+                null,
+                this.LocalizedResources.GetLocalizedString("WritingArchiveStatus"),
+                null,
+                null));
+
+            using ZipArchive zipArchive = new(stream, ZipArchiveMode.Create, leaveOpen: false, Encoding.UTF8);
+
+            string[] allDirectories = [.. Directory.EnumerateDirectories(AppUtils.NormalizePath(this._tempFolderLocation), "*", SearchOption.AllDirectories)];
+            foreach (string directory in allDirectories)
+            {
+                this.Ct.ThrowIfCancellationRequested();
+                string relativePath = Path.GetRelativePath(this._tempFolderLocation, directory)
+                    .Replace(Path.DirectorySeparatorChar, '/')
+                    .Replace(Path.AltDirectorySeparatorChar, '/');
+                zipArchive.CreateEntry(relativePath.TrimEnd('/') + "/");
+            }
 
             foreach (string file in files)
             {
                 this.Ct.ThrowIfCancellationRequested();
-                
-                this.ProgressHandler?.Report((null, 0, $"Writing to archive: {Path.GetFileName(file)}", null, null));
 
-                await using FileStream fileStream = new(
-                    file,
-                    FileMode.Open,
-                    FileAccess.Read,
-                    FileShare.Read,
-                    bufferSize: 81920,
-                    useAsync: true);
-                
                 string entryName = Path.GetRelativePath(this._tempFolderLocation, file)
                     .Replace(Path.DirectorySeparatorChar, '/')
                     .Replace(Path.AltDirectorySeparatorChar, '/');
-                
-                await writer.WriteAsync(entryName, fileStream, File.GetLastWriteTime(file), this.Ct);
+
+                zipArchive.CreateEntryFromFile(AppUtils.NormalizePath(file), entryName, CompressionLevel.Optimal);
             }
 
-            this.AfterSizeBytes = new FileInfo(destName).Length;
+            this.AfterSizeBytes = new FileInfo(AppUtils.NormalizePath(destName)).Length;
         }
         catch (Exception e)
         {
+#if DEBUG
+            Console.Error.WriteLine(e);
+#endif
             result.Errors.Add(e.Message);
         }
         finally
         {
-            if (Directory.Exists(this._tempFolderLocation))
+            if (Directory.Exists(AppUtils.NormalizePath(this._tempFolderLocation)))
             {
-                Directory.Delete(this._tempFolderLocation, true);
+                Directory.Delete(AppUtils.NormalizePath(this._tempFolderLocation), true);
             }
         }
 

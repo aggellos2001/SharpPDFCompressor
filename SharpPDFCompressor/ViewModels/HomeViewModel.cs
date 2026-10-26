@@ -307,7 +307,6 @@ public partial class HomeViewModel : ObservableObject
 
         ProgressDialogViewModel progressDialogViewModel = new();
         progressDialogViewModel.InitializeWorkers();
-        // ConcurrentQueue<int> availableStatusSlots = new(Enumerable.Range(0, maxWorkers));
 
         ProgressDialog dialog = new(progressDialogViewModel)
         {
@@ -330,23 +329,36 @@ public partial class HomeViewModel : ObservableObject
 
             this._cts.Cancel();
             dialog.Title = this._localizer.GetLocalizedString("CancelOperation");
-            progressDialogViewModel.CurrentFileBeingCompressed =
+            progressDialogViewModel.ProgressSummary =
                 this._localizer.GetLocalizedString("CancelOperationExplanation");
             dialog.CloseButtonText = this._localizer.GetLocalizedString("PleaseWait");
         };
 
         int highestCompletedFileCount = 0;
+        int compressionFinished = 0;
         Progress<(double? progressValue, int? workerID, string? message, int? completedFiles, int? totalFiles)>
             progressHandler = new(report =>
             {
+                if (Volatile.Read(ref compressionFinished) == 1)
+                {
+                    return;
+                }
+
                 if (report.progressValue is { } progressValue)
                 {
                     progressDialogViewModel.ProgressValue += progressValue;
                 }
 
-                if ((report.workerID, report.message) is ({ } workerId, { } message) && message != "Done...")
+                if (report.message is { } message && message != "Done...")
                 {
-                    progressDialogViewModel.UpdateWorkerStatus(workerId, message);
+                    if (report.workerID is { } workerId)
+                    {
+                        progressDialogViewModel.UpdateWorkerStatus(workerId, message);
+                    }
+                    else
+                    {
+                        progressDialogViewModel.ProgressSummary = message;
+                    }
                 }
 
                 if (report.completedFiles is { } completedFiles && report.totalFiles is { } totalFiles &&
@@ -437,6 +449,8 @@ public partial class HomeViewModel : ObservableObject
         dialog.ShowAsync();
 
         CompressionResult compressionResult = await compressor.ExecuteCompressAsync();
+        Volatile.Write(ref compressionFinished, 1);
+        progressDialogViewModel.ProgressSummary = string.Empty;
 
         if (compressionResult.BeforeSizeBytes is { } beforeSize && compressionResult.AfterSizeBytes is { } afterSize)
         {
@@ -470,13 +484,17 @@ public partial class HomeViewModel : ObservableObject
 
         if (!compressionResult.HasErrors)
         {
-            progressDialogViewModel.CurrentFileBeingCompressed = this._localizer.GetLocalizedString("Success");
+            dialog.Title = this._localizer.GetLocalizedString("Success");
         }
         else
         {
             progressDialogViewModel.ShowError = true;
             progressDialogViewModel.ErrorList = compressionResult.Errors;
-            progressDialogViewModel.CurrentFileBeingCompressed = this._localizer.GetLocalizedString("Failure");
+            progressDialogViewModel.ProgressSummary = string.Format(
+                CultureInfo.CurrentCulture,
+                this._localizer.GetLocalizedString("FailedToCompressPdfFiles"),
+                compressionResult.Errors.Count);
+            dialog.Title = this._localizer.GetLocalizedString("CompletedWithErrors");
         }
 
         this.SetFilePath(string.Empty);

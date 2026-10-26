@@ -171,6 +171,12 @@
   <data name="Failure" xml:space="preserve">
     <value>Αποτυχία</value>
   </data>
+  <data name="CompletedWithErrors" xml:space="preserve">
+    <value>Ολοκληρώθηκε με σφάλματα</value>
+  </data>
+  <data name="FailedToCompressPdfFiles" xml:space="preserve">
+    <value>Απέτυχε η συμπίεση {0} αρχείων PDF.</value>
+  </data>
   <data name="Cancel" xml:space="preserve">
     <value>Ακύρωση</value>
   </data>
@@ -253,7 +259,7 @@
     <value>Συμπίεση σε εξέλιξη. Παρακαλώ περιμένετε καθώς αυτή η ενέργεια μπορεί να διαρκέσει αρκετή ώρα.</value>
   </data>
   <data name="LongNameException" xml:space="preserve">
-    <value>Η διαδρομή του αρχείου ξεπερνάει το όριο των 250 χαρακτήρων. Μειώστε τα ονόματα των φακέλων και των αρχείων και δοκιμάστε ξανά.</value>
+    <value>Η διαδρομή του αρχείου ξεπερνάει το όριο των 260 χαρακτήρων. Μειώστε τα ονόματα των φακέλων και των αρχείων και δοκιμάστε ξανά.</value>
   </data>
   <data name="ThemeSettingsCard.Header" xml:space="preserve">
     <value>Θέμα εφαρμογής</value>
@@ -383,5 +389,11 @@
   </data>
   <data name="ZipSlipError" xml:space="preserve">
     <value>Η εξαγωγή διακόπηκε: το αρχείο περιέχει επικίνδυνη διαδρομή '{0}' που προσπαθεί να φύγει από τον φάκελο προορισμού.</value>
+  </data>
+  <data name="ExtractingStatus" xml:space="preserve">
+    <value>Εξαγωγή αρχείου...</value>
+  </data>
+  <data name="WritingArchiveStatus" xml:space="preserve">
+    <value>Εγγραφή συμπιεσμένου αρχείου...</value>
   </data>
 </root>

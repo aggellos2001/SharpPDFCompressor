@@ -10,7 +10,6 @@ namespace SharpPDFCompressor.ViewModels;
 public partial class ProgressDialogViewModel : ObservableObject
 {
     [ObservableProperty] public partial double ProgressValue { get; set; }
-    [ObservableProperty] public partial string? CurrentFileBeingCompressed { get; set; }
     [ObservableProperty] public partial string? ProgressSummary { get; set; }
     [ObservableProperty] public partial string? BeforeSize { get; set; }
     [ObservableProperty] public partial string? AfterSize { get; set; }
