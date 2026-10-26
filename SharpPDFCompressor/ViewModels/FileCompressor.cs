@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using SharpPDFCompressor.Utils;
 
 namespace SharpPDFCompressor.ViewModels;
 
@@ -24,7 +25,7 @@ public sealed class FileCompressor : Compressor
 
         foreach (string inputFile in inputFiles)
         {
-            if (!File.Exists(inputFile) || !IsPdf(inputFile))
+            if (!File.Exists(AppUtils.NormalizePath(inputFile)) || !IsPdf(inputFile))
             {
                 result.Errors.Add("File not found!");
                 return result;
@@ -47,8 +48,8 @@ public sealed class FileCompressor : Compressor
 
         // if delete original files is enabled we remove the original file and rename the
         // newly created one.
-        File.Delete(originalFilePath);
-        File.Move(compressedFilePath, originalFilePath);
+        File.Delete(AppUtils.NormalizePath(originalFilePath));
+        File.Move(AppUtils.NormalizePath(compressedFilePath), AppUtils.NormalizePath(originalFilePath));
 
         return new CompressionResult();
     }

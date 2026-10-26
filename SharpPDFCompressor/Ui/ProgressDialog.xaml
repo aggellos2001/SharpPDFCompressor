@@ -14,27 +14,20 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <TextBlock Grid.Row="0"
-                   Text="{x:Bind ViewModel.CurrentFileBeingCompressed, Mode=OneWay}"
-                   TextWrapping="Wrap"
-                   Style="{StaticResource BodyStrongTextBlockStyle}"
-                   Foreground="{ThemeResource TextFillColorPrimaryBrush}" />
-
-        <TextBlock Grid.Row="1"
                    Text="{x:Bind ViewModel.ProgressSummary, Mode=OneWay}"
                    Style="{StaticResource CaptionTextBlockStyle}"
                    Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
 
-        <ProgressBar Grid.Row="2"
+        <ProgressBar Grid.Row="1"
                      HorizontalAlignment="Stretch"
                      MinHeight="4"
                      Value="{x:Bind ViewModel.ProgressValue, Mode=OneWay}"
                      ShowError="{x:Bind ViewModel.ShowError, Mode=OneWay}" />
 
-        <InfoBar Grid.Row="3"
+        <InfoBar Grid.Row="2"
                  localizer:Uids.Uid="SizeSummaryInfoBar"
                  IsOpen="True"
                  Severity="Informational"
@@ -115,7 +108,7 @@
             </InfoBar.Content>
         </InfoBar>
 
-        <controls:SettingsExpander Grid.Row="4"
+        <controls:SettingsExpander Grid.Row="3"
                                    localizer:Uids.Uid="WorkerProgressExpander"
                                    IsExpanded="False"
                                    HeaderIcon="{ui:FontIcon Glyph=&#xE756;}"
@@ -164,7 +157,7 @@
             </controls:SettingsExpander.Items>
         </controls:SettingsExpander>
 
-        <Grid Grid.Row="5"
+        <Grid Grid.Row="4"
               Visibility="{x:Bind ViewModel.ShowError, Mode=OneWay}"
               RowSpacing="8">
             <Grid.RowDefinitions>
