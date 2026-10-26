@@ -6,19 +6,21 @@ using SharpPDFCompressor.DataModels;
 using SharpPDFCompressor.ViewModels;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.Services.Store;
 using Windows.System;
+using WinUI3Localizer;
 
 namespace SharpPDFCompressor.Ui;
 
 public sealed partial class Settings : Page
 {
-    private bool _isThemeSelectorInitialized;
-    private bool _isUpdatingThemeSelector;
     private bool _isLanguageSelectorInitialized;
+    private bool _isThemeSelectorInitialized;
     private bool _isUpdatingLanguageSelector;
+    private bool _isUpdatingThemeSelector;
 
     public Settings()
     {
@@ -138,11 +140,28 @@ public sealed partial class Settings : Page
 
         try
         {
-            IReadOnlyList<StorePackageUpdate>? updates = await this.ViewModel.CheckForUpdatesAsync();
+            IReadOnlyList<StorePackageUpdate>? updates;
+            try
+            {
+                updates = await this.ViewModel.CheckForUpdatesAsync();
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine($"Store update check failed: {exception}");
+                await this.ShowErrorDialog(
+                    "UpdateCheckErrorTitle",
+                    "UpdateCheckErrorMessage",
+                    true,
+                    GetExceptionDetails(exception));
+                return;
+            }
 
             if (updates is null)
             {
-                await this.ShowErrorDialog("UpdateCheckErrorTitle", "UpdateCheckErrorMessage");
+                await this.ShowErrorDialog(
+                    "UpdateCheckErrorTitle",
+                    "UpdateCheckErrorMessage",
+                    true);
                 return;
             }
 
@@ -165,7 +184,7 @@ public sealed partial class Settings : Page
 
                 if (dialogResult == ContentDialogResult.Primary)
                 {
-                    await this.ViewModel.RequestDownloadAndInstallUpdatesAsync(updates!);
+                    await this.InstallUpdatesAsync(updates);
                 }
             }
             else
@@ -181,10 +200,6 @@ public sealed partial class Settings : Page
                 await dialog.ShowAsync();
             }
         }
-        catch (Exception)
-        {
-            await this.ShowErrorDialog("UpdateCheckErrorTitle", "UpdateCheckErrorMessage");
-        }
         finally
         {
             this.CheckForUpdatesButton.IsEnabled = true;
@@ -192,22 +207,89 @@ public sealed partial class Settings : Page
         }
     }
 
-    private async Task ShowErrorDialog(string titleKey, string messageKey)
+    private async Task InstallUpdatesAsync(IReadOnlyList<StorePackageUpdate> updates)
     {
+        try
+        {
+            StorePackageUpdateResult result = await this.ViewModel.RequestDownloadAndInstallUpdatesAsync(updates);
+            if (result.OverallState == StorePackageUpdateState.Canceled)
+            {
+                return;
+            }
+
+            if (result.OverallState != StorePackageUpdateState.Completed)
+            {
+                Debug.WriteLine($"Store update installation ended with status {result.OverallState}.");
+                await this.ShowErrorDialog(
+                    "UpdateInstallErrorTitle",
+                    "UpdateInstallStatusMessage",
+                    true,
+                    messageArgument: result.OverallState.ToString());
+            }
+        }
+        catch (Exception exception)
+        {
+            Debug.WriteLine($"Store update installation failed: {exception}");
+            await this.ShowErrorDialog(
+                "UpdateInstallErrorTitle",
+                "UpdateInstallErrorMessage",
+                true,
+                GetExceptionDetails(exception));
+        }
+    }
+
+    private async Task ShowErrorDialog(
+        string titleKey,
+        string messageKey,
+        bool offerStoreNavigation = false,
+        string? diagnosticDetails = null,
+        string? messageArgument = null)
+    {
+        string message = messageArgument is null
+            ? this.GetLocalized(messageKey)
+            : string.Format(this.GetLocalized(messageKey), messageArgument);
+        if (diagnosticDetails is not null)
+        {
+            message =
+                $"{message}\n\n{string.Format(this.GetLocalized("UpdateErrorDetailsMessage"), diagnosticDetails)}";
+        }
+
         ContentDialog dialog = new()
         {
             XamlRoot = this.XamlRoot,
             Title = new TextBlock { Text = this.GetLocalized(titleKey) },
-            Content = new TextBlock { Text = this.GetLocalized(messageKey), TextWrapping = TextWrapping.Wrap },
+            Content = new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
+            PrimaryButtonText = offerStoreNavigation ? this.GetLocalized("OpenMicrosoftStoreButton") : null,
+            PrimaryButtonStyle = offerStoreNavigation ? (Style)Application.Current.Resources["AccentButtonStyle"] : null,
             CloseButtonText = this.GetLocalized("OkButton")
         };
 
-        await dialog.ShowAsync();
+        ContentDialogResult result = await dialog.ShowAsync();
+        if (offerStoreNavigation && result == ContentDialogResult.Primary)
+        {
+            try
+            {
+                bool launched = await Launcher.LaunchUriAsync(new Uri("ms-windows-store://downloadsandupdates"));
+                if (!launched)
+                {
+                    Debug.WriteLine("The Microsoft Store Updates and downloads page could not be launched.");
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.WriteLine($"Failed to launch the Microsoft Store Updates and downloads page: {exception}");
+            }
+        }
+    }
+
+    private static string GetExceptionDetails(Exception exception)
+    {
+        return $"{exception.GetType().Name}, HRESULT 0x{exception.HResult:X8}";
     }
 
     private string GetLocalized(string key)
     {
-        return WinUI3Localizer.Localizer.Get().GetLocalizedString(key);
+        return Localizer.Get().GetLocalizedString(key);
     }
 
     private static bool IsPackaged()

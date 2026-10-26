@@ -370,7 +370,22 @@
     <value>Update check failed</value>
   </data>
   <data name="UpdateCheckErrorMessage" xml:space="preserve">
-    <value>Unable to check for updates. Make sure you are connected to the internet and try again. Note: update checks are limited to once every 30 minutes.</value>
+    <value>Unable to check for updates. Make sure you are connected to the internet and try again. Note: update checks are limited to once every 30 minutes. You can also open Microsoft Store and check for updates manually.</value>
+  </data>
+  <data name="UpdateInstallErrorTitle" xml:space="preserve">
+    <value>Update installation failed</value>
+  </data>
+  <data name="UpdateInstallErrorMessage" xml:space="preserve">
+    <value>The in-app update could not be completed. You can open Microsoft Store's Updates and downloads page and check for updates manually.</value>
+  </data>
+  <data name="UpdateInstallStatusMessage" xml:space="preserve">
+    <value>The Store update operation ended with status {0}. You can open Microsoft Store's Updates and downloads page and check for updates manually.</value>
+  </data>
+  <data name="UpdateErrorDetailsMessage" xml:space="preserve">
+    <value>Technical details: {0}</value>
+  </data>
+  <data name="OpenMicrosoftStoreButton" xml:space="preserve">
+    <value>Open Microsoft Store</value>
   </data>
   <data name="OkButton" xml:space="preserve">
     <value>OK</value>

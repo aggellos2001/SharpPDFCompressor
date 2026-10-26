@@ -8,11 +8,14 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using Windows.ApplicationModel;
 using Windows.Services.Store;
+using WinRT.Interop;
 
 namespace SharpPDFCompressor.ViewModels;
 
 public partial class SettingsViewModel : ObservableObject
 {
+    private StoreContext? _storeContext;
+
     public string AppVersion
     {
         get
@@ -47,13 +50,9 @@ public partial class SettingsViewModel : ObservableObject
         this.UpdateInProgress = true;
         try
         {
-            StoreContext storeContext = StoreContext.GetDefault();
+            StoreContext storeContext = this.GetStoreContext();
             IReadOnlyList<StorePackageUpdate> updates = await storeContext.GetAppAndOptionalStorePackageUpdatesAsync();
             return updates;
-        }
-        catch (Exception)
-        {
-            return null;
         }
         finally
         {
@@ -61,10 +60,31 @@ public partial class SettingsViewModel : ObservableObject
         }
     }
 
-    public async Task RequestDownloadAndInstallUpdatesAsync(IReadOnlyList<StorePackageUpdate> updates)
+    public async Task<StorePackageUpdateResult> RequestDownloadAndInstallUpdatesAsync(
+        IReadOnlyList<StorePackageUpdate> updates)
     {
+        StoreContext storeContext = this.GetStoreContext();
+        return await storeContext.RequestDownloadAndInstallStorePackageUpdatesAsync(updates);
+    }
+
+    private StoreContext GetStoreContext()
+    {
+        if (this._storeContext is not null)
+        {
+            return this._storeContext;
+        }
+
+        if (App.MainWindow is null)
+        {
+            throw new InvalidOperationException(
+                "The main window is not available to associate with the Store context.");
+        }
+
         StoreContext storeContext = StoreContext.GetDefault();
-        await storeContext.RequestDownloadAndInstallStorePackageUpdatesAsync(updates);
+        IntPtr hWnd = WindowNative.GetWindowHandle(App.MainWindow);
+        InitializeWithWindow.Initialize(storeContext, hWnd);
+        this._storeContext = storeContext;
+        return storeContext;
     }
 
     public async Task LoadLicenses()

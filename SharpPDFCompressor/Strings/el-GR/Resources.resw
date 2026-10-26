@@ -370,7 +370,22 @@
     <value>Αποτυχία ελέγχου ενημερώσεων</value>
   </data>
   <data name="UpdateCheckErrorMessage" xml:space="preserve">
-    <value>Δεν ήταν δυνατός ο έλεγχος ενημερώσεων. Βεβαιωθείτε ότι είστε συνδεδεμένοι στο διαδίκτυο και προσπαθήστε ξανά. Σημείωση: οι έλεγχοι ενημερώσεων περιορίζονται σε μία φορά κάθε 30 λεπτά.</value>
+    <value>Δεν ήταν δυνατός ο έλεγχος ενημερώσεων. Βεβαιωθείτε ότι είστε συνδεδεμένοι στο διαδίκτυο και προσπαθήστε ξανά. Σημείωση: οι έλεγχοι ενημερώσεων περιορίζονται σε μία φορά κάθε 30 λεπτά. Μπορείτε επίσης να ανοίξετε το Microsoft Store και να ελέγξετε μη αυτόματα για ενημερώσεις.</value>
+  </data>
+  <data name="UpdateInstallErrorTitle" xml:space="preserve">
+    <value>Αποτυχία εγκατάστασης ενημέρωσης</value>
+  </data>
+  <data name="UpdateInstallErrorMessage" xml:space="preserve">
+    <value>Δεν ήταν δυνατή η ολοκλήρωση της ενημέρωσης μέσα από την εφαρμογή. Μπορείτε να ανοίξετε τη σελίδα «Ενημερώσεις και λήψεις» του Microsoft Store και να ελέγξετε μη αυτόματα για ενημερώσεις.</value>
+  </data>
+  <data name="UpdateInstallStatusMessage" xml:space="preserve">
+    <value>Η λειτουργία ενημέρωσης του Store ολοκληρώθηκε με κατάσταση {0}. Μπορείτε να ανοίξετε τη σελίδα «Ενημερώσεις και λήψεις» του Microsoft Store και να ελέγξετε μη αυτόματα για ενημερώσεις.</value>
+  </data>
+  <data name="UpdateErrorDetailsMessage" xml:space="preserve">
+    <value>Τεχνικές λεπτομέρειες: {0}</value>
+  </data>
+  <data name="OpenMicrosoftStoreButton" xml:space="preserve">
+    <value>Άνοιγμα Microsoft Store</value>
   </data>
   <data name="OkButton" xml:space="preserve">
     <value>Εντάξει</value>
