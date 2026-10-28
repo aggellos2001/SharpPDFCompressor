@@ -399,6 +399,9 @@
   <data name="ResetMaxDecompressedSizeButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Επαναφορά στην προεπιλογή (1024 MB)</value>
   </data>
+  <data name="ResetParallelismLevelButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Επαναφορά στην προεπιλογή (ανάλογα με τον επεξεργαστή)</value>
+  </data>
   <data name="ZipBombError" xml:space="preserve">
     <value>Η εξαγωγή διακόπηκε: το συνολικό μέγεθος αποσυμπίεσης ξεπερνάει το όριο των {0} MB.</value>
   </data>
@@ -410,5 +413,11 @@
   </data>
   <data name="WritingArchiveStatus" xml:space="preserve">
     <value>Εγγραφή συμπιεσμένου αρχείου...</value>
+  </data>
+  <data name="ScanningFilesStatus" xml:space="preserve">
+    <value>Σάρωση φακέλου...</value>
+  </data>
+  <data name="CopyingFilesStatus" xml:space="preserve">
+    <value>Αντιγραφή των υπόλοιπων αρχείων...</value>
   </data>
 </root>

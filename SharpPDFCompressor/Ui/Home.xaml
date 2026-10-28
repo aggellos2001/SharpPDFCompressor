@@ -109,15 +109,22 @@
                         <controls:SettingsCard localizer:Uids.Uid="ParallelismLevel"
                                                HeaderIcon="{ui:FontIcon Glyph=&#xEC4A;}"
                                                HorizontalAlignment="Stretch">
-                            <ComboBox SelectedValue="{x:Bind ViewModel.ParallelismLevel,Mode=TwoWay}"
-                                      SelectedValuePath="Content">
-                                <ComboBoxItem Content="1" />
-                                <ComboBoxItem Content="2" />
-                                <ComboBoxItem Content="4" />
-                                <ComboBoxItem Content="8" />
-                                <ComboBoxItem Content="16" />
-                                <ComboBoxItem Content="32" />
-                            </ComboBox>
+                            <StackPanel Orientation="Horizontal" Spacing="4">
+                                <ComboBox SelectedValue="{x:Bind ViewModel.ParallelismLevel,Mode=TwoWay}"
+                                          SelectedValuePath="Content">
+                                    <ComboBoxItem Content="1" />
+                                    <ComboBoxItem Content="2" />
+                                    <ComboBoxItem Content="4" />
+                                    <ComboBoxItem Content="8" />
+                                    <ComboBoxItem Content="16" />
+                                    <ComboBoxItem Content="32" />
+                                </ComboBox>
+                                <Button Command="{x:Bind ViewModel.ResetParallelismLevelCommand}"
+                                        localizer:Uids.Uid="ResetParallelismLevelButton"
+                                        AutomationProperties.Name="Reset parallelism level">
+                                    <FontIcon FontFamily="Segoe Fluent Icons" Glyph="&#xE777;" />
+                                </Button>
+                            </StackPanel>
                         </controls:SettingsCard>
                         <controls:SettingsCard localizer:Uids.Uid="MaxDecompressedSizeCard"
                                                HeaderIcon="{ui:FontIcon Glyph=&#xe740;}"

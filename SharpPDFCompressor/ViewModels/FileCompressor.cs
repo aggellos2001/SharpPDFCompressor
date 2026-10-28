@@ -54,5 +54,8 @@ public sealed class FileCompressor : Compressor
         return new CompressionResult();
     }
 
-    protected override Task<CompressionResult> PostCompressionAsync() => Task.FromResult(new CompressionResult());
+    protected override Task<CompressionResult> PostCompressionAsync()
+    {
+        return Task.FromResult(new CompressionResult());
+    }
 }

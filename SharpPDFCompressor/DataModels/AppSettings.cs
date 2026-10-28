@@ -28,10 +28,14 @@ internal enum LanguagePreference
 internal sealed class AppSettings
 {
     public const int DefaultMaxDecompressedSizeMb = 1024;
+    public static readonly int[] ParallelismLevels = [1, 2, 4, 8, 16, 32];
 
     public ThemePreference Theme { get; set; } = ThemePreference.System;
     public LanguagePreference Language { get; set; } = LanguagePreference.System;
     public int MaxDecompressedSizeMb { get; set; } = DefaultMaxDecompressedSizeMb;
+
+    // null means the user never changed it, so the default derived from the CPU is used.
+    public int? ParallelismLevel { get; set; }
 
     [JsonIgnore]
     public LanguagePreference ResolvedLanguage => this.Language switch
@@ -47,9 +51,11 @@ internal sealed class AppSettings
 internal static class AppSettingsStore
 {
     private const string SettingsKey = "SettingsJson";
+
     private static readonly string AppDataFolder = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
         "SharpPDFCompressor");
+
     private static readonly string SettingsPath = Path.Combine(AppDataFolder, "settings.json");
 
     public static string AppDataFolderPath => IsPackaged
@@ -86,7 +92,9 @@ internal static class AppSettingsStore
         {
             string? json = IsPackaged
                 ? ApplicationData.Current.LocalSettings.Values[SettingsKey] as string
-                : File.Exists(SettingsPath) ? File.ReadAllText(SettingsPath) : null;
+                : File.Exists(SettingsPath)
+                    ? File.ReadAllText(SettingsPath)
+                    : null;
             if (json is not null)
             {
                 AppSettings? settings = JsonSerializer.Deserialize(json, SettingsJsonContext.Default.AppSettings);
@@ -96,7 +104,8 @@ internal static class AppSettingsStore
                 }
             }
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or SecurityException or JsonException or NotSupportedException or ArgumentException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or SecurityException
+                                              or JsonException or NotSupportedException or ArgumentException)
         {
         }
 
@@ -125,13 +134,18 @@ internal static class AppSettingsStore
             Directory.CreateDirectory(directory);
             File.WriteAllText(SettingsPath, json);
         }
-        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or SecurityException or JsonException or NotSupportedException or ArgumentException)
+        catch (Exception exception) when (exception is IOException or UnauthorizedAccessException or SecurityException
+                                              or JsonException or NotSupportedException or ArgumentException)
         {
         }
     }
 
-    private static bool IsValid(AppSettings settings) =>
-        Enum.IsDefined(settings.Theme) &&
-        Enum.IsDefined(settings.Language) &&
-        settings.MaxDecompressedSizeMb > 0;
+    private static bool IsValid(AppSettings settings)
+    {
+        return Enum.IsDefined(settings.Theme) &&
+               Enum.IsDefined(settings.Language) &&
+               settings.MaxDecompressedSizeMb > 0 &&
+               (settings.ParallelismLevel is null ||
+                Array.IndexOf(AppSettings.ParallelismLevels, settings.ParallelismLevel.Value) >= 0);
+    }
 }
