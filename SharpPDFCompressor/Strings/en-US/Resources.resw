@@ -399,6 +399,9 @@
   <data name="ResetMaxDecompressedSizeButton.ToolTipService.ToolTip" xml:space="preserve">
     <value>Reset to default (1024 MB)</value>
   </data>
+  <data name="ResetParallelismLevelButton.ToolTipService.ToolTip" xml:space="preserve">
+    <value>Reset to default (based on your CPU)</value>
+  </data>
   <data name="ZipBombError" xml:space="preserve">
     <value>Extraction aborted: total decompressed size exceeds the limit of {0} MB.</value>
   </data>
@@ -410,5 +413,11 @@
   </data>
   <data name="WritingArchiveStatus" xml:space="preserve">
     <value>Writing compressed archive...</value>
+  </data>
+  <data name="ScanningFilesStatus" xml:space="preserve">
+    <value>Scanning folder...</value>
+  </data>
+  <data name="CopyingFilesStatus" xml:space="preserve">
+    <value>Copying other files...</value>
   </data>
 </root>

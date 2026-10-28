@@ -35,10 +35,16 @@ public partial class HomeViewModel : ObservableObject
         this._localizer.LanguageChanged += this.Localizer_LanguageChanged;
         this.UpdateDeleteOriginalCardLabels();
         this.MaxDecompressedSizeMb = App.Settings.MaxDecompressedSizeMb;
+        if (App.Settings.ParallelismLevel is { } savedParallelismLevel)
+        {
+            this.ParallelismLevel = savedParallelismLevel.ToString(CultureInfo.InvariantCulture);
+        }
     }
 
-    private void Localizer_LanguageChanged(object? sender, LanguageChangedEventArgs e) =>
+    private void Localizer_LanguageChanged(object? sender, LanguageChangedEventArgs e)
+    {
         this.UpdateDeleteOriginalCardLabels();
+    }
 
     private void UpdateDeleteOriginalCardLabels()
     {
@@ -74,13 +80,58 @@ public partial class HomeViewModel : ObservableObject
         this.FilePath = string.Join(Environment.NewLine, this._selectedPdfPaths);
     }
 
-    private static bool IsPdf(string path) => Path.GetExtension(path).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
+    private static bool IsPdf(string path)
+    {
+        return Path.GetExtension(path).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
+    }
 
-    [ObservableProperty] public partial string ParallelismLevel { get; set; } = GetNearestParallelismLevel(Environment.ProcessorCount).ToString();
+    [ObservableProperty]
+    public partial string ParallelismLevel { get; set; } =
+        GetNearestParallelismLevel(Environment.ProcessorCount).ToString();
+
+    private bool _isResettingParallelismLevel;
+
+    [RelayCommand]
+    private void ResetParallelismLevel()
+    {
+        this._isResettingParallelismLevel = true;
+        try
+        {
+            this.ParallelismLevel = GetNearestParallelismLevel(Environment.ProcessorCount).ToString();
+        }
+        finally
+        {
+            this._isResettingParallelismLevel = false;
+        }
+
+        if (App.Settings.ParallelismLevel is not null)
+        {
+            App.Settings.ParallelismLevel = null;
+            AppSettingsStore.Save(App.Settings);
+        }
+    }
+
+    partial void OnParallelismLevelChanged(string value)
+    {
+        if (this._isResettingParallelismLevel)
+        {
+            return;
+        }
+
+        if (!int.TryParse(value, NumberStyles.Integer, CultureInfo.InvariantCulture, out int level) ||
+            Array.IndexOf(AppSettings.ParallelismLevels, level) < 0 ||
+            App.Settings.ParallelismLevel == level)
+        {
+            return;
+        }
+
+        App.Settings.ParallelismLevel = level;
+        AppSettingsStore.Save(App.Settings);
+    }
 
     private static int GetNearestParallelismLevel(int processorCount)
     {
-        int[] levels = [1, 2, 4, 8, 16, 32];
+        int[] levels = AppSettings.ParallelismLevels;
         int minDistance = int.MaxValue;
         int nearest = levels[0];
         foreach (int level in levels)
@@ -249,7 +300,8 @@ public partial class HomeViewModel : ObservableObject
                 this.SetDeleteOriginalCardLabelKeys("CreateNewFolder");
             }
             else if (items.Count == 1 && items[0] is StorageFile archiveFile &&
-                     ArchiveFactory.IsArchive(archiveFile.Path, out ArchiveType? archiveType) && archiveType is not null)
+                     ArchiveFactory.IsArchive(archiveFile.Path, out ArchiveType? archiveType) &&
+                     archiveType is not null)
             {
                 this.SetFilePath(archiveFile.Path);
                 this.DeleteOriginalFiles = false;
@@ -327,7 +379,15 @@ public partial class HomeViewModel : ObservableObject
                 return;
             }
 
-            this._cts.Cancel();
+            try
+            {
+                this._cts?.Cancel();
+            }
+            catch (ObjectDisposedException)
+            {
+                return;
+            }
+
             dialog.Title = this._localizer.GetLocalizedString("CancelOperation");
             progressDialogViewModel.ProgressSummary =
                 this._localizer.GetLocalizedString("CancelOperationExplanation");
@@ -393,7 +453,8 @@ public partial class HomeViewModel : ObservableObject
                 Ct = this._cts.Token
             };
         }
-        else if (!Directory.Exists(this.FilePath) && ArchiveFactory.IsArchive(this.FilePath, out ArchiveType? isArchiveType))
+        else if (!Directory.Exists(this.FilePath) &&
+                 ArchiveFactory.IsArchive(this.FilePath, out ArchiveType? isArchiveType))
         {
             if (isArchiveType is not null)
             {
@@ -446,7 +507,7 @@ public partial class HomeViewModel : ObservableObject
         }
 
 
-        dialog.ShowAsync();
+        _ = ShowDialogSafeAsync(dialog);
 
         CompressionResult compressionResult = await compressor.ExecuteCompressAsync();
         Volatile.Write(ref compressionFinished, 1);
@@ -498,6 +559,23 @@ public partial class HomeViewModel : ObservableObject
         }
 
         this.SetFilePath(string.Empty);
+
+        this._cts?.Dispose();
+        this._cts = null;
+    }
+
+    private static async Task ShowDialogSafeAsync(ContentDialog dialog)
+    {
+        try
+        {
+            await dialog.ShowAsync();
+        }
+        catch (Exception exception)
+        {
+#if DEBUG
+            Console.Error.WriteLine(exception);
+#endif
+        }
     }
 
     private static string FormatFileSize(long sizeBytes)

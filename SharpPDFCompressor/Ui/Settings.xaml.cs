@@ -260,7 +260,8 @@ public sealed partial class Settings : Page
             Title = new TextBlock { Text = this.GetLocalized(titleKey) },
             Content = new TextBlock { Text = message, TextWrapping = TextWrapping.Wrap },
             PrimaryButtonText = offerStoreNavigation ? this.GetLocalized("OpenMicrosoftStoreButton") : null,
-            PrimaryButtonStyle = offerStoreNavigation ? (Style)Application.Current.Resources["AccentButtonStyle"] : null,
+            PrimaryButtonStyle =
+                offerStoreNavigation ? (Style)Application.Current.Resources["AccentButtonStyle"] : null,
             CloseButtonText = this.GetLocalized("OkButton")
         };
 

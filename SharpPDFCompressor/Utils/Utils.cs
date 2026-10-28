@@ -14,7 +14,18 @@ public static class AppUtils
 
     public static string NormalizePath(string path)
     {
-        if (path.StartsWith(@"\\?\", StringComparison.Ordinal) || GetAbsolutePathLength(path) <= MaxPathLength)
+        if (path.StartsWith(@"\\?\", StringComparison.Ordinal))
+        {
+            return path;
+        }
+
+        // Fast path: resolving a fully qualified path can only shorten it, so no GetFullPath call is needed.
+        if (path.Length <= MaxPathLength && Path.IsPathFullyQualified(path))
+        {
+            return path;
+        }
+
+        if (GetAbsolutePathLength(path) <= MaxPathLength)
         {
             return path;
         }
@@ -32,12 +43,7 @@ public static class AppUtils
 
     private static int GetAbsolutePathLength(string path)
     {
-        string fullPath = GetAbsolutePath(path);
-        int pathLength = fullPath.Length;
-#if DEBUG
-        Console.WriteLine($"MuPDF path length: {pathLength} UTF-16 code units; path: {fullPath}");
-#endif
-        return pathLength;
+        return GetAbsolutePath(path).Length;
     }
 
     private static string GetAbsolutePath(string path)
