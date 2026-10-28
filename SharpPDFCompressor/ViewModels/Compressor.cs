@@ -1,12 +1,15 @@
+using MuPDF.NET;
 using SharpPDFCompressor.DataModels;
 using SharpPDFCompressor.Utils;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using WinUI3Localizer;
+using FileInfo = System.IO.FileInfo;
 
 namespace SharpPDFCompressor.ViewModels;
 
@@ -39,7 +42,10 @@ public abstract class Compressor
     public bool IgnoreCompressedFiles { get; init; }
     public int MaxDecompressedSizeMb { get; init; } = AppSettings.DefaultMaxDecompressedSizeMb;
     public required CancellationToken Ct { get; init; }
-    public required IProgress<(double? progressValue, int? workerID, string? message, int? completedFiles, int? totalFiles)>? ProgressHandler { get; init; }
+
+    public required
+        IProgress<(double? progressValue, int? workerID, string? message, int? completedFiles, int? totalFiles)>?
+        ProgressHandler { get; init; }
 
     public required string InputFilesPath { get; init; }
     public int NumOfThreads { get; init; } = 4;
@@ -47,21 +53,32 @@ public abstract class Compressor
 
     public async Task<CompressionResult> ExecuteCompressAsync()
     {
-        CompressionResult result = await this.PreCompressAsync();
-        if (result.HasErrors || this.Ct.IsCancellationRequested)
+        try
         {
+            CompressionResult result = await this.PreCompressAsync();
+            if (result.HasErrors || this.Ct.IsCancellationRequested)
+            {
+                return this.AddSizeSummary(result);
+            }
+
+            CompressionResult compressionResult = await this.CompressAsync();
+            if (this.Ct.IsCancellationRequested)
+            {
+                return this.AddSizeSummary(compressionResult);
+            }
+
+            result = await this.PostCompressionAsync();
+            result.Errors.AddRange(compressionResult.Errors);
             return this.AddSizeSummary(result);
         }
-
-        CompressionResult compressionResult = await this.CompressAsync();
-        if (this.Ct.IsCancellationRequested)
+        finally
         {
-            return this.AddSizeSummary(compressionResult);
+            this.CleanupAfterCompression();
         }
+    }
 
-        result = await this.PostCompressionAsync();
-        result.Errors.AddRange(compressionResult.Errors);
-        return this.AddSizeSummary(result);
+    protected virtual void CleanupAfterCompression()
+    {
     }
 
     private CompressionResult AddSizeSummary(CompressionResult result)
@@ -74,34 +91,42 @@ public abstract class Compressor
     protected abstract Task<CompressionResult> PreCompressAsync();
     protected abstract CompressionResult PostFileCompress(string originalFilePath, string compressedFilePath);
 
+    protected virtual string GetCompressedOutputPath(string inputFilePath, string compressedFileName)
+    {
+        string? directoryName = Path.GetDirectoryName(inputFilePath);
+        return Path.Combine(directoryName!, compressedFileName);
+    }
+
+    protected virtual bool IncludeCompressedPdfSizesInSummary => true;
+
     protected virtual void OnFileCompressFailed(string file)
     {
     }
 
     protected abstract Task<CompressionResult> PostCompressionAsync();
 
-    protected static bool IsPdf(string file) => Path.GetExtension(file).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
+    protected static bool IsPdf(string file)
+    {
+        return Path.GetExtension(file).Equals(".pdf", StringComparison.OrdinalIgnoreCase);
+    }
 
     protected static long GetFilesSize(IEnumerable<string> files)
     {
-        long totalSize = 0;
-        foreach (string file in files)
-        {
-            totalSize += new System.IO.FileInfo(AppUtils.NormalizePath(file)).Length;
-        }
-
-        return totalSize;
+        return files.Sum(file => new FileInfo(AppUtils.NormalizePath(file)).Length);
     }
 
-    protected static long GetDirectorySize(string directoryPath) =>
-        GetFilesSize(Directory.EnumerateFiles(AppUtils.NormalizePath(directoryPath), "*.*", SearchOption.AllDirectories));
+    protected static long GetDirectorySize(string directoryPath)
+    {
+        return GetFilesSize(Directory.EnumerateFiles(AppUtils.NormalizePath(directoryPath), "*.*",
+            SearchOption.AllDirectories));
+    }
 
     private async Task<CompressionResult> CompressAsync()
     {
         ParallelOptions parallelOptions = new() { MaxDegreeOfParallelism = this.NumOfThreads };
         ConcurrentBag<string> threadErrors = [];
         int completedFiles = 0;
-        long afterSizeBytes = 0;
+        long afterSizeBytes = this.AfterSizeBytes ?? 0;
 
         await Task.Run(() =>
         {
@@ -131,23 +156,32 @@ public abstract class Compressor
                     }
 
                     string safeFileName = AppUtils.GetSafeFileName(file, this.CompressedSuffix);
-                    string compressedFileName = Path.Combine(directoryName, $"{safeFileName}");
+                    string compressedFilePath = this.GetCompressedOutputPath(file, safeFileName);
                     int counter = 1;
                     // Keep appending a counter until we find a filename that doesn't exist yet
-                    while (File.Exists(AppUtils.NormalizePath(compressedFileName)))
+                    while (File.Exists(AppUtils.NormalizePath(compressedFilePath)))
                     {
                         safeFileName = AppUtils.GetSafeFileName(file, $"{this.CompressedSuffix} ({counter})");
-                        compressedFileName = Path.Combine(directoryName, safeFileName);
+                        compressedFilePath = this.GetCompressedOutputPath(file, safeFileName);
                         counter++;
                     }
 
                     this.ProgressHandler?.Report((
-                        null, slotIndex, $"{this.LocalizedResources.GetLocalizedString("Compressing")} {file}", null, null));
+                        null, slotIndex, $"{this.LocalizedResources.GetLocalizedString("Compressing")} {file}", null,
+                        null));
 
                     this.Ct.ThrowIfCancellationRequested();
-                    var document = AppUtils.OpenDocumentForMuPDF(file);
+                    Document document = AppUtils.OpenDocumentForMuPDF(file);
                     try
                     {
+                        string? compressedDirectory = Path.GetDirectoryName(compressedFilePath);
+                        if (compressedDirectory == null)
+                        {
+                            threadErrors.Add($"{file}: {this.LocalizedResources.GetLocalizedString("GenericError")}");
+                            return;
+                        }
+
+                        Directory.CreateDirectory(AppUtils.NormalizePath(compressedDirectory));
                         if (this.CompressImages)
                         {
                             // Recompress images to reduce file size:
@@ -166,7 +200,7 @@ public abstract class Compressor
                             );
                         }
 
-                        AppUtils.SaveDocumentForMuPDF(document, compressedFileName, 4, deflate: 1, useObjstms: 1);
+                        AppUtils.SaveDocumentForMuPDF(document, compressedFilePath, 4, 1, 1);
                     }
                     finally
                     {
@@ -174,9 +208,12 @@ public abstract class Compressor
                     }
 
                     this.Ct.ThrowIfCancellationRequested();
-                    Interlocked.Add(ref afterSizeBytes,
-                        new System.IO.FileInfo(AppUtils.NormalizePath(compressedFileName)).Length);
-                    this.PostFileCompress(file, compressedFileName);
+                    if (this.IncludeCompressedPdfSizesInSummary)
+                    {
+                        Interlocked.Add(ref afterSizeBytes,
+                            new FileInfo(AppUtils.NormalizePath(compressedFilePath)).Length);
+                    }
+                    this.PostFileCompress(file, compressedFilePath);
                 }
                 catch (Exception exception)
                 {
@@ -207,7 +244,10 @@ public abstract class Compressor
             });
         }, this.Ct);
 
-        this.AfterSizeBytes = afterSizeBytes;
+        if (this.IncludeCompressedPdfSizesInSummary)
+        {
+            this.AfterSizeBytes = afterSizeBytes;
+        }
         return new CompressionResult { Errors = [.. threadErrors] };
     }
 }

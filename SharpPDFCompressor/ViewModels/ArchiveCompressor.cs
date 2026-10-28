@@ -16,6 +16,8 @@ public class ArchiveCompressor : Compressor
 {
     private string? _tempFolderLocation;
 
+    protected override bool IncludeCompressedPdfSizesInSummary => false;
+
     /// <summary>
     /// Filters files for archive inclusion: for PDFs, only keeps the compressed version
     /// (containing the compressed suffix) if it exists; non-PDF files are always included.
@@ -178,6 +180,14 @@ public class ArchiveCompressor : Compressor
     protected override CompressionResult PostFileCompress(string originalFilePath, string compressedFilePath)
     {
         return new CompressionResult();
+    }
+
+    protected override void CleanupAfterCompression()
+    {
+        if (this._tempFolderLocation is not null && Directory.Exists(AppUtils.NormalizePath(this._tempFolderLocation)))
+        {
+            Directory.Delete(AppUtils.NormalizePath(this._tempFolderLocation), true);
+        }
     }
 
     protected override async Task<CompressionResult> PostCompressionAsync()
