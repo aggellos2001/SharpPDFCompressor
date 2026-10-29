@@ -165,10 +165,23 @@
                 <RowDefinition Height="Auto" />
             </Grid.RowDefinitions>
 
-            <TextBlock Grid.Row="0"
-                       Text="Errors encountered"
-                       Style="{StaticResource CaptionTextBlockStyle}"
-                       Foreground="{ThemeResource SystemFillColorCriticalBrush}" />
+            <Grid Grid.Row="0" ColumnSpacing="8">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0"
+                           Text="Errors encountered"
+                           Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource SystemFillColorCriticalBrush}"
+                           VerticalAlignment="Center" />
+
+                <Button Grid.Column="1"
+                        Content="Copy all"
+                        Style="{StaticResource DefaultButtonStyle}"
+                        Command="{x:Bind ViewModel.CopyAllErrorsToClipboardCommand}" />
+            </Grid>
 
             <ListView Grid.Row="1"
                       x:Name="DialogErrorList"

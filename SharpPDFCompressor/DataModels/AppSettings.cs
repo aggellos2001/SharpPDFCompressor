@@ -27,12 +27,14 @@ internal enum LanguagePreference
 
 internal sealed class AppSettings
 {
-    public const int DefaultMaxDecompressedSizeMb = 1024;
+    public const int DefaultMaxDecompressedSizeMb = 4096;
     public static readonly int[] ParallelismLevels = [1, 2, 4, 8, 16, 32];
 
     public ThemePreference Theme { get; set; } = ThemePreference.System;
     public LanguagePreference Language { get; set; } = LanguagePreference.System;
     public int MaxDecompressedSizeMb { get; set; } = DefaultMaxDecompressedSizeMb;
+    public string CompressedSuffix { get; set; } = "_compressed";
+    public bool IgnoreCompressedFiles { get; set; } = true;
 
     // null means the user never changed it, so the default derived from the CPU is used.
     public int? ParallelismLevel { get; set; }
@@ -145,6 +147,7 @@ internal static class AppSettingsStore
         return Enum.IsDefined(settings.Theme) &&
                Enum.IsDefined(settings.Language) &&
                settings.MaxDecompressedSizeMb > 0 &&
+               !string.IsNullOrWhiteSpace(settings.CompressedSuffix) &&
                (settings.ParallelismLevel is null ||
                 Array.IndexOf(AppSettings.ParallelismLevels, settings.ParallelismLevel.Value) >= 0);
     }
