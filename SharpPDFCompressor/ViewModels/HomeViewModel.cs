@@ -35,6 +35,8 @@ public partial class HomeViewModel : ObservableObject
         this._localizer.LanguageChanged += this.Localizer_LanguageChanged;
         this.UpdateDeleteOriginalCardLabels();
         this.MaxDecompressedSizeMb = App.Settings.MaxDecompressedSizeMb;
+        this.CompressedSuffix = App.Settings.CompressedSuffix;
+        this.IgnoreCompressedFiles = App.Settings.IgnoreCompressedFiles;
         if (App.Settings.ParallelismLevel is { } savedParallelismLevel)
         {
             this.ParallelismLevel = savedParallelismLevel.ToString(CultureInfo.InvariantCulture);
@@ -153,7 +155,29 @@ public partial class HomeViewModel : ObservableObject
 
     [ObservableProperty] public partial string CompressedSuffix { get; set; } = Compressor.DefaultCompressedSuffix;
 
+    partial void OnCompressedSuffixChanged(string value)
+    {
+        if (string.IsNullOrWhiteSpace(value) || App.Settings.CompressedSuffix == value)
+        {
+            return;
+        }
+
+        App.Settings.CompressedSuffix = value;
+        AppSettingsStore.Save(App.Settings);
+    }
+
     [ObservableProperty] public partial bool IgnoreCompressedFiles { get; set; } = true;
+
+    partial void OnIgnoreCompressedFilesChanged(bool value)
+    {
+        if (App.Settings.IgnoreCompressedFiles == value)
+        {
+            return;
+        }
+
+        App.Settings.IgnoreCompressedFiles = value;
+        AppSettingsStore.Save(App.Settings);
+    }
 
     [ObservableProperty]
     public partial int MaxDecompressedSizeMb { get; set; } = AppSettings.DefaultMaxDecompressedSizeMb;

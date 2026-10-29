@@ -69,6 +69,23 @@ public partial class ProgressDialogViewModel : ObservableObject
         this.SelectedListError = null;
     }
 
+    [RelayCommand]
+    public async Task CopyAllErrorsToClipboard()
+    {
+        if (this.ErrorList is not { Count: > 0 } errors)
+        {
+            return;
+        }
+
+        DataPackage dataPackage = new();
+        dataPackage.SetText(string.Join(System.Environment.NewLine, errors));
+        Clipboard.SetContent(dataPackage);
+
+        this.TipShown = true;
+        await Task.Delay(2000);
+        this.TipShown = false;
+    }
+
     public void InitializeWorkers()
     {
         this.WorkerFileStatuses.CollectionChanged -= this.OnWorkerStatusesChanged;

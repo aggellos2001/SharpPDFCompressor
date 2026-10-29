@@ -336,7 +336,13 @@ public abstract class Compressor
 #if DEBUG
                         Console.Error.WriteLine(exception);
 #endif
-                        threadErrors.Add($"{file}: {exception.Message}");
+                        // MuPDF messages may or may not name the file, so strip any embedded path and use one "file: detail" format.
+                        string detail = exception.Message
+                            .Replace(file, string.Empty, StringComparison.OrdinalIgnoreCase)
+                            .Trim()
+                            .TrimEnd(':')
+                            .Trim();
+                        threadErrors.Add($"{file}: {detail}");
                         this.OnFileCompressFailed(file);
                     }
                     finally
